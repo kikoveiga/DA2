@@ -4,4 +4,4 @@ project(DA2)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(DA2
-        src/main.cpp headers/Graph.h src/Graph.cpp headers/Utils.h src/Utils.cpp)
+        src/main.cpp headers/Graph.h src/Graph.cpp headers/Utils.h src/Utils.cpp headers/Menu.h src/Menu.cpp)

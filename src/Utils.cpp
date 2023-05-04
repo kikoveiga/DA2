@@ -7,7 +7,7 @@
 using namespace std;
 
 Utils::Utils() {
-    return;
+    buildGraphs();
 }
 
 void Utils::buildGraphs() {

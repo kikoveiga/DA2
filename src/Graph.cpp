@@ -11,7 +11,7 @@ Graph::Graph(const string& name, bool realOrToy) {
     this->realOrToy = realOrToy;
 }
 
-void Graph::addNode(int id, float latitude, float longitude, const std::string& label) {
+void Graph::addNode(int id, float latitude, float longitude, const string& label) {
 
     if (latitude != 0) {
         auto node = new Node{id, {}, latitude, longitude};
