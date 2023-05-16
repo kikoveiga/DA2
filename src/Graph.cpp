@@ -33,6 +33,25 @@ void Graph::addEdge(int first, int second, float distance) {
     nodes[second]->adj.push_back(edge);
 }
 
-vector<Graph::Node*> Graph::getNodes() const {
+const vector<Graph::Node*>& Graph::getNodes() const {
     return nodes;
+}
+
+const string& Graph::getName() const {
+    return name;
+}
+
+bool Graph::isRealOrToy() const {
+    return realOrToy;
+}
+
+unsigned Graph::getNumberOfEdges() const {
+
+    unsigned numberOfEdges = 0;
+
+    for (auto node : nodes) {
+        numberOfEdges += node->adj.size();
+    }
+
+    return numberOfEdges / 2;
 }

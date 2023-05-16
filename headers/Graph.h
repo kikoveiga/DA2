@@ -39,7 +39,12 @@ public:
     void addNode(int id, float latitude = 0, float longitude = 0, const std::string& label = "");
     void addEdge(int first, int second, float distance);
 
-    std::vector<Node*> getNodes() const;
+    const std::string& getName() const;
+    bool isRealOrToy() const;
+    const std::vector<Node*>& getNodes() const;
+    unsigned getNumberOfEdges() const;
+
+
 };
 
 #endif //DA2_GRAPH_H
