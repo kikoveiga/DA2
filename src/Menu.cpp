@@ -58,6 +58,19 @@ void Menu::press0ToContinue() {
     }
 }
 
+bool Menu::areYouSure() {
+
+    cout << "THIS GRAPH IS A REAL-WORLD GRAPH AND IS VERY BIG!\n";
+    cout << "THE RESULT WILL BE PRINTED TO A TEXT FILE\n";
+
+    while (true) {
+        cout << "ARE YOU SURE YOU WANT TO PRINT IT? (yes/no) "; getline(cin >> ws, command);
+        if (command == "yes" || command == "no") break;
+    }
+
+    return command == "yes";
+}
+
 void Menu::mainMenu() {
 
     cleanTerminal();
@@ -86,6 +99,13 @@ void Menu::graphsMenu() {
 
     if (command == "1") { // Choose a Graph
 
+        for (int i = 1; i <= utils.getGraphs().size(); i++) {
+            cout << "   [" << i << "]" << utils.getGraphs()[i - 1]->getName() << '\n';
+        }
+        cout << '\n';
+
+        enterOption((int)utils.getGraphs().size());
+        graphMenu(utils.getGraphs()[stoi(command) - 1]);
     }
 
     else if (command == "2") {
@@ -102,4 +122,69 @@ void Menu::graphsMenu() {
 
 
     command = "1";
+}
+
+void Menu::graphMenu(Graph* graph) {
+
+    cleanTerminal();
+
+    cout << "-------------------------------------------------\n"
+         << "|" << setw((int)((42 + (int)graph->getName().size())/2.0)) << graph->getName()<< " MENU"
+         << setw(((46 - (int)graph->getName().size())/2.0 + 0.5)) << "|\n"
+         << "|-----------------------------------------------|\n"
+         << "| 1. NUMBER OF NODES AND EDGES                  |\n"
+         << "| 2. PRINT GRAPH                                |\n"
+         << "| 3. GO BACK                                    |\n"
+         << "-------------------------------------------------\n";
+
+
+    enterOption(3);
+
+    if (command == "1") { // Number of Nodes and Edges
+
+        cout << "   -NUMBER OF NODES: " << graph->getNodes().size() << '\n';
+        cout << "   -NUMBER OF EDGES: " << graph->getNumberOfEdges() << '\n';
+        cout << endl;
+        press0ToContinue();
+    }
+
+    else if (command == "2") { // Print Graph
+
+        if (!graph->isRealOrToy() || areYouSure()) {
+            printGraph(graph);
+            press0ToContinue();
+        }
+    }
+
+    else {
+        command = "1";
+        return;
+    }
+
+    graphMenu(graph);
+
+}
+
+void Menu::printGraph(Graph* graph) {
+
+    ofstream file;
+    file.open("../" + graph->getName() + ".txt");
+
+    file << "Nodes = {";
+
+    for (auto i : graph->getNodes()) {
+        file << i->id << ", ";
+    }
+    file << "}\n\n";
+
+    file << "Edges = {\n\n";
+
+    for (auto i : graph->getNodes()) {
+        file << "   " << i->id << "-> {";
+        for (auto j : i->adj) {
+             j->first != i ? file << j->first->id << ", " : file << j->second->id << ", ";
+        }
+        file << "}\n";
+    }
+    file << "}\n";
 }

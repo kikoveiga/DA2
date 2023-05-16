@@ -74,7 +74,7 @@ Graph* Utils::buildToyGraph(const string& filename) {
     string line, last;
     getline(file, line);
 
-    auto graph = new Graph(filename, false);
+    auto graph = new Graph(filename.substr(0, filename.size() - 4), false);
     graphs.push_back(graph);
 
     while (getline(file, line)) {
@@ -103,7 +103,7 @@ Graph* Utils::buildToyGraph(const string& filename) {
     return graph;
 }
 
-vector<Graph*> Utils::getGraphs() {
+const vector<Graph*>& Utils::getGraphs() {
     return graphs;
 }
 

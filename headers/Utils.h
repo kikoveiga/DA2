@@ -26,7 +26,7 @@ public:
     void buildRealWorldGraphEdges(int number);
     Graph* buildToyGraph(const std::string& filename);
 
-    std::vector<Graph*> getGraphs();
+    const std::vector<Graph*>& getGraphs();
 };
 
 #endif //DA2_UTILS_H

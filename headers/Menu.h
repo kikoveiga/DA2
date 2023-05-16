@@ -8,6 +8,7 @@
 #include "Utils.h"
 #include <iostream>
 #include <algorithm>
+#include <iomanip>
 
 class Menu {
 
@@ -21,8 +22,11 @@ public:
     void cleanTerminal();
     void enterOption(int n);
     void press0ToContinue();
+    bool areYouSure();
     void mainMenu();
     void graphsMenu();
+    void graphMenu(Graph* graph);
+    void printGraph(Graph* graph);
 
 };
 
