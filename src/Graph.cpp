@@ -56,6 +56,33 @@ unsigned Graph::getNumberOfEdges() const {
     return numberOfEdges / 2;
 }
 
+float Graph::calculateCost(const std::vector<int>& tour) {
+    float cost = 0;
+    int number_of_nodes = nodes.size();
+
+    for (int i = 0; i < number_of_nodes - 1; i++) {
+        int current = tour[i];
+        int next = tour[i+1];
+        // Not sure if this is correct.
+        // It should add the weight of the edge to the cost.
+        cost += nodes[current]->adj[next]->distance;
+    }
+
+    // Add the cost of returning to the starting node (from the last node).
+    // Not sure if this is needed!!
+    int last_node = tour[number_of_nodes - 1];
+    int first_node = tour[0];
+    cost += nodes[last_node]->adj[first_node]->distance;
+
+    return cost;
+}
+
+void Graph::tspBacktracking(int current, std::vector<int>& tour, int& minCost, int depth) {
+    int number_of_nodes = nodes.size();
+
+
+}
+
 void Graph::setAllNodesUnvisited() {
     for (auto& node : nodes) {
         node->visited = false;
@@ -70,6 +97,13 @@ int Graph::solveTspWithBacktracking() {
 
     // Start at the initial node (labeled with the zero-identifier label)
     nodes[0]->visited = true;
+
+    // Create a tour vector to store the path
+    std::vector<int> tour;
+    tour.push_back(0);
+
+    // Initialize the minimum cost to a large value
+    int minCost = INT_MAX;
 }
 
 

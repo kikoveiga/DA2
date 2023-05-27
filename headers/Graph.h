@@ -45,6 +45,20 @@ public:
     const std::vector<Node*>& getNodes() const;
     unsigned getNumberOfEdges() const;
     /**
+     * @brief Function to calculate the costs of the tour
+     * @param tour
+     * @return
+     */
+    float calculateCost(const std::vector<int>& tour);
+    /**
+     * @brief Backtracking function to find the optimal TSP tour
+     * @param current
+     * @param tour
+     * @param minCost
+     * @param depth
+     */
+    void tspBacktracking(int current, std::vector<int>& tour, int& minCost, int depth);
+    /**
      * @brief This function should solve the TSP with backtracking
      * Backtracking can be used to solve the TSP,
      * but it becomes computationally infeasible for larger graphs due to the exponential growth in the number of
