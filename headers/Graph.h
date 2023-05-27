@@ -29,6 +29,7 @@ private:
         float latitude;
         float longitude;
         std::string label;
+        bool visited = false;
     };
 
     std::vector<Node*> nodes;
@@ -43,6 +44,18 @@ public:
     bool isRealOrToy() const;
     const std::vector<Node*>& getNodes() const;
     unsigned getNumberOfEdges() const;
+    /**
+     * @brief This function should solve the TSP with backtracking
+     * Backtracking can be used to solve the TSP,
+     * but it becomes computationally infeasible for larger graphs due to the exponential growth in the number of
+     * possible tours to explore.
+     * @return
+     */
+    int solveTspWithBacktracking();
+    /**
+     * @brief sets all nodes visited field to false
+     */
+    void setAllNodesUnvisited();
 
 
 };

@@ -55,3 +55,21 @@ unsigned Graph::getNumberOfEdges() const {
 
     return numberOfEdges / 2;
 }
+
+void Graph::setAllNodesUnvisited() {
+    for (auto& node : nodes) {
+        node->visited = false;
+    }
+}
+
+int Graph::solveTspWithBacktracking() {
+    int number_of_nodes = nodes.size();
+
+    // Set all nodes to unvisited
+    setAllNodesUnvisited();
+
+    // Start at the initial node (labeled with the zero-identifier label)
+    nodes[0]->visited = true;
+}
+
+
