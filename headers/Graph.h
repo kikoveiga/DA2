@@ -57,7 +57,7 @@ public:
      * @param minCost
      * @param depth
      */
-    void tspBacktracking(int current, std::vector<int>& tour, int& minCost, int depth);
+    void tspBacktracking(int current, std::vector<int>& tour, float& minCost, int depth);
     /**
      * @brief This function should solve the TSP with backtracking
      * Backtracking can be used to solve the TSP,
@@ -65,7 +65,7 @@ public:
      * possible tours to explore.
      * @return
      */
-    int solveTspWithBacktracking();
+    float solveTspWithBacktracking();
     /**
      * @brief sets all nodes visited field to false
      */

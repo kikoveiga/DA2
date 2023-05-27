@@ -3,6 +3,7 @@
 //
 
 #include "../headers/Graph.h"
+#include <iostream>
 
 using namespace std;
 
@@ -58,7 +59,7 @@ unsigned Graph::getNumberOfEdges() const {
 
 float Graph::calculateCost(const std::vector<int>& tour) {
     float cost = 0;
-    int number_of_nodes = nodes.size();
+    std::size_t number_of_nodes = nodes.size();
 
     for (int i = 0; i < number_of_nodes - 1; i++) {
         int current = tour[i];
@@ -77,10 +78,33 @@ float Graph::calculateCost(const std::vector<int>& tour) {
     return cost;
 }
 
-void Graph::tspBacktracking(int current, std::vector<int>& tour, int& minCost, int depth) {
-    int number_of_nodes = nodes.size();
+void Graph::tspBacktracking(int current, std::vector<int>& tour, float& minCost, int depth) {
+    std::size_t number_of_nodes = nodes.size();
 
+    // Base case: all nodes visited
+    if (depth == number_of_nodes) {
+        // Check if it forms a better tour
+        float cost = calculateCost(tour);
+        if (cost < minCost) {
+            minCost = cost;
+        }
+        return;
+    }
 
+    // Try all possible next nodes
+    for (int next = 0; next < number_of_nodes; next++) {
+        if (!nodes[next]->visited) {
+            nodes[next]->visited = true;
+            tour.push_back(next);
+
+            // Recursively check next nodes
+            tspBacktracking(next, tour, minCost, depth + 1);
+
+            // If it doesn't find a better cost tour, backtrack
+            nodes[next]->visited = false;
+            tour.pop_back();
+        }
+    }
 }
 
 void Graph::setAllNodesUnvisited() {
@@ -89,8 +113,8 @@ void Graph::setAllNodesUnvisited() {
     }
 }
 
-int Graph::solveTspWithBacktracking() {
-    int number_of_nodes = nodes.size();
+float Graph::solveTspWithBacktracking() {
+    std::cout << 'a';
 
     // Set all nodes to unvisited
     setAllNodesUnvisited();
@@ -103,7 +127,18 @@ int Graph::solveTspWithBacktracking() {
     tour.push_back(0);
 
     // Initialize the minimum cost to a large value
-    int minCost = INT_MAX;
+    float minCost = 99999999999.0; // hardcoded
+
+    std::cout << 'a';
+
+    // Call the backtracking function
+    tspBacktracking(0, tour, minCost, 1);
+
+    for (int i : tour) {
+        std::cout << i << ' ';
+    }
+
+    return minCost;
 }
 
 
