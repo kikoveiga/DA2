@@ -75,8 +75,14 @@ float Graph::calculateCost(const vector<int>& tour) {
         cost += findEdge(tour[i], tour[i + 1])->distance;
     }
 
+    // Check if the last node connects to the first one
     Edge* edge = findEdge(tour.back(), tour.front());
-    cost += edge == nullptr ? 0 : edge->distance;
+    if (edge != nullptr) {
+        cost += edge->distance;
+    // if it doesn't then the solution is not valid
+    } else {
+        return numeric_limits<float>::max();
+    }
 
     return cost;
 }
