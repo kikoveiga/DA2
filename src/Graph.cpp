@@ -34,6 +34,16 @@ void Graph::addEdge(int first, int second, float distance) {
     nodes[second]->adj.push_back(edge);
 }
 
+Graph::Edge* Graph::findEdge(int first, int second) {
+
+        for (auto edge : nodes[first]->adj) {
+            if (edge->first->id == second || edge->second->id == second) {
+                return edge;
+            }
+        }
+        return nullptr;
+}
+
 const vector<Graph::Node*>& Graph::getNodes() const {
     return nodes;
 }
@@ -57,64 +67,60 @@ unsigned Graph::getNumberOfEdges() const {
     return numberOfEdges / 2;
 }
 
-float Graph::calculateCost(const std::vector<int>& tour) {
+float Graph::calculateCost(const vector<int>& tour) {
     float cost = 0;
-    std::size_t number_of_nodes = nodes.size();
 
-    for (int i = 0; i < number_of_nodes - 1; i++) {
-        int current = tour[i];
-        int next = tour[i+1];
-        // Not sure if this is correct.
-        // It should add the weight of the edge to the cost.
-        cost += nodes[current]->adj[next]->distance;
+    for (int i = 0; i < nodes.size() - 1; i++) {
+
+        cost += findEdge(tour[i], tour[i + 1])->distance;
     }
 
-    // Add the cost of returning to the starting node (from the last node).
-    // Not sure if this is needed!!
-    int last_node = tour[number_of_nodes - 1];
-    int first_node = tour[0];
-    cost += nodes[last_node]->adj[first_node]->distance;
+    Edge* edge = findEdge(tour.back(), tour.front());
+    cost += edge == nullptr ? 0 : edge->distance;
 
     return cost;
 }
 
-void Graph::tspBacktracking(int current, std::vector<int>& tour, float& minCost, int depth) {
-    std::size_t number_of_nodes = nodes.size();
+void Graph::tspBacktracking(unsigned current, vector<int>& currPath, float& minCost, unsigned depth, vector<int>& bestPath) {
 
     // Base case: all nodes visited
-    if (depth == number_of_nodes) {
+    if (depth == nodes.size()) {
         // Check if it forms a better tour
-        float cost = calculateCost(tour);
+        float cost = calculateCost(currPath);
         if (cost < minCost) {
             minCost = cost;
+            bestPath = currPath;
         }
         return;
     }
 
     // Try all possible next nodes
-    for (int next = 0; next < number_of_nodes; next++) {
+    for (auto i : nodes[current]->adj) {
+        int next = i->first->id == current ? i->second->id : i->first->id;
+
+        // If the next node hasn't been visited
         if (!nodes[next]->visited) {
             nodes[next]->visited = true;
-            tour.push_back(next);
+            currPath.push_back(next);
 
             // Recursively check next nodes
-            tspBacktracking(next, tour, minCost, depth + 1);
+            tspBacktracking(next, currPath, minCost, depth + 1, bestPath);
+
 
             // If it doesn't find a better cost tour, backtrack
             nodes[next]->visited = false;
-            tour.pop_back();
+            currPath.pop_back();
         }
     }
 }
 
 void Graph::setAllNodesUnvisited() {
-    for (auto& node : nodes) {
+    for (auto node : nodes) {
         node->visited = false;
     }
 }
 
 float Graph::solveTspWithBacktracking() {
-    std::cout << 'a';
 
     // Set all nodes to unvisited
     setAllNodesUnvisited();
@@ -123,19 +129,18 @@ float Graph::solveTspWithBacktracking() {
     nodes[0]->visited = true;
 
     // Create a tour vector to store the path
-    std::vector<int> tour;
-    tour.push_back(0);
+    vector<int> currPath;
+    currPath.push_back(0);
 
     // Initialize the minimum cost to a large value
-    float minCost = 99999999999.0; // hardcoded
-
-    std::cout << 'a';
+    float minCost = numeric_limits<float>::max();
 
     // Call the backtracking function
-    tspBacktracking(0, tour, minCost, 1);
+    vector<int> bestPath;
+    tspBacktracking(0, currPath, minCost, 1, bestPath);
 
-    for (int i : tour) {
-        std::cout << i << ' ';
+    for (int i : bestPath) {
+        cout << i << ' ';
     }
 
     return minCost;

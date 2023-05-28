@@ -168,22 +168,25 @@ void Menu::graphMenu(Graph* graph) {
 void Menu::printGraph(Graph* graph) {
 
     ofstream file;
-    file.open("../" + graph->getName() + ".txt");
+    file.open("../dataset/" + graph->getName() + ".txt");
 
     file << "Nodes = {";
 
     for (auto i : graph->getNodes()) {
         file << i->id << ", ";
     }
+
+    file.seekp(file.tellp() - (long)2);
     file << "}\n\n";
 
     file << "Edges = {\n\n";
 
     for (auto i : graph->getNodes()) {
-        file << "   " << i->id << "-> {";
+        file << "   " << i->id << " -> {";
         for (auto j : i->adj) {
              j->first != i ? file << j->first->id << ", " : file << j->second->id << ", ";
         }
+        file.seekp(file.tellp() - (long)2);
         file << "}\n";
     }
     file << "}\n";

@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <limits>
 
 class Graph {
 
@@ -39,6 +40,7 @@ public:
     Graph(const std::string& name, bool realOrToy);
     void addNode(int id, float latitude = 0, float longitude = 0, const std::string& label = "");
     void addEdge(int first, int second, float distance);
+    Edge* findEdge(int first, int second);
 
     const std::string& getName() const;
     bool isRealOrToy() const;
@@ -57,7 +59,7 @@ public:
      * @param minCost
      * @param depth
      */
-    void tspBacktracking(int current, std::vector<int>& tour, float& minCost, int depth);
+    void tspBacktracking(unsigned current, std::vector<int>& currPath, float& minCost, unsigned depth, std::vector<int>& bestPath);
     /**
      * @brief This function should solve the TSP with backtracking
      * Backtracking can be used to solve the TSP,

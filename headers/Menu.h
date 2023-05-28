@@ -19,14 +19,14 @@ private:
 public:
     Menu();
     void run();
-    void cleanTerminal();
+    static void cleanTerminal();
     void enterOption(int n);
     void press0ToContinue();
     bool areYouSure();
     void mainMenu();
     void graphsMenu();
     void graphMenu(Graph* graph);
-    void printGraph(Graph* graph);
+    static void printGraph(Graph* graph);
 
 };
 

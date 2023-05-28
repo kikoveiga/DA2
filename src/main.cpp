@@ -5,19 +5,13 @@
 #include <iostream>
 
 #include "../headers/Menu.h"
-#include "../headers/Utils.h"
 
 using namespace std;
 
 void testBacktracking() {
     Utils utils;
     vector<Graph*> graphs = utils.getGraphs();
-
-    for (Graph* graph : graphs) {
-        std::cout << graph->getName() << endl;
-    }
-
-    Graph* shipping_graph = graphs[3];
+    Graph* shipping_graph = graphs[0];
 
     float result = shipping_graph->solveTspWithBacktracking();
     std::cout << result;
@@ -25,6 +19,6 @@ void testBacktracking() {
 
 int main() {
     testBacktracking();
-    // Menu menu;
+    //Menu menu;
 }
 
