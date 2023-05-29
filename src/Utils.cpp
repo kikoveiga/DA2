@@ -16,9 +16,15 @@ void Utils::buildGraphs() {
         buildRealWorldGraph(i);
     }
 
-    buildToyGraph("shipping.csv");
-    buildToyGraph("stadiums.csv");
-    buildToyGraph("tourism.csv");
+    buildToyGraph("shipping.csv", "../dataset/Toy-Graphs/");
+    buildToyGraph("stadiums.csv", "../dataset/Toy-Graphs/");
+    buildToyGraph("tourism.csv", "../dataset/Toy-Graphs/");
+
+    vector<int> nNodes = {25, 50, 75, 100, 200, 300, 400, 500, 600, 700, 800, 900};
+
+    for (int n : nNodes) {
+        buildToyGraph("edges_" + to_string(n) + ".csv", "../dataset/Extra_Fully_Connected_Graphs/");
+    }
 }
 
 Graph* Utils::buildRealWorldGraph(int number) {
@@ -68,11 +74,11 @@ void Utils::buildRealWorldGraphEdges(int number) {
     }
 }
 
-Graph* Utils::buildToyGraph(const string& filename) {
+Graph* Utils::buildToyGraph(const string& filename, const string& path) {
 
-    ifstream file("../dataset/Toy-Graphs/" + filename);
+    ifstream file(path + filename);
     string line, last;
-    getline(file, line);
+    if (filename[0] != 'e') getline(file, line);
 
     auto graph = new Graph(filename.substr(0, filename.size() - 4), false);
     graphs.push_back(graph);

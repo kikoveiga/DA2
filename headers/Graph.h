@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <limits>
+#include <algorithm>
 
 class Graph {
 
@@ -25,7 +26,7 @@ private:
     };
 
     struct Node {
-        int id;
+        unsigned id;
         std::vector<Edge*> adj = {};
         float latitude;
         float longitude;
@@ -38,20 +39,16 @@ private:
 public:
 
     Graph(const std::string& name, bool realOrToy);
-    void addNode(int id, float latitude = 0, float longitude = 0, const std::string& label = "");
-    void addEdge(int first, int second, float distance);
-    Edge* findEdge(int first, int second);
+    void addNode(unsigned id, float latitude = 0, float longitude = 0, const std::string& label = "");
+    void addEdge(unsigned first, unsigned second, float distance);
+    Edge* findEdge(unsigned first, unsigned second);
 
     const std::string& getName() const;
     bool isRealOrToy() const;
+    bool isComplete() const;
     const std::vector<Node*>& getNodes() const;
     unsigned getNumberOfEdges() const;
-    /**
-     * @brief Function to calculate the costs of the tour
-     * @param tour
-     * @return
-     */
-    float calculateCost(const std::vector<int>& tour);
+
     /**
      * @brief Backtracking function to find the optimal TSP tour
      * @param current
@@ -59,7 +56,7 @@ public:
      * @param minCost
      * @param depth
      */
-    void tspBacktracking(unsigned current, std::vector<int>& currPath, float& minCost, unsigned depth, std::vector<int>& bestPath);
+    void tspBacktracking(unsigned currNode, std::vector<unsigned>& currPath,float currDistance, float& minDistance, unsigned depth, std::vector<unsigned>& bestPath);
     /**
      * @brief This function should solve the TSP with backtracking
      * Backtracking can be used to solve the TSP,

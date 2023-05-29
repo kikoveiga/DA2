@@ -12,7 +12,7 @@ Graph::Graph(const string& name, bool realOrToy) {
     this->realOrToy = realOrToy;
 }
 
-void Graph::addNode(int id, float latitude, float longitude, const string& label) {
+void Graph::addNode(unsigned id, float latitude, float longitude, const string& label) {
 
     if (latitude != 0) {
         auto node = new Node{id, {}, latitude, longitude};
@@ -23,18 +23,18 @@ void Graph::addNode(int id, float latitude, float longitude, const string& label
     if (nodes.size() > id) return;
 
     while (nodes.size() <= id) {
-        auto node = new Node{.id = (int)nodes.size(), .label = label};
+        auto node = new Node{.id = (unsigned)nodes.size(), .label = label};
         nodes.push_back(node);
     }
 }
 
-void Graph::addEdge(int first, int second, float distance) {
+void Graph::addEdge(unsigned first, unsigned second, float distance) {
     auto edge = new Edge{nodes[first], nodes[second], distance};
     nodes[first]->adj.push_back(edge);
     nodes[second]->adj.push_back(edge);
 }
 
-Graph::Edge* Graph::findEdge(int first, int second) {
+Graph::Edge* Graph::findEdge(unsigned first, unsigned second) {
 
         for (auto edge : nodes[first]->adj) {
             if (edge->first->id == second || edge->second->id == second) {
@@ -56,6 +56,11 @@ bool Graph::isRealOrToy() const {
     return realOrToy;
 }
 
+bool Graph::isComplete() const {
+
+    all_of(nodes.begin(), nodes.end(), [this](Node* node) { return node->adj.size() == nodes.size() - 1; });
+}
+
 unsigned Graph::getNumberOfEdges() const {
 
     unsigned numberOfEdges = 0;
@@ -67,55 +72,38 @@ unsigned Graph::getNumberOfEdges() const {
     return numberOfEdges / 2;
 }
 
-float Graph::calculateCost(const vector<int>& tour) {
-    float cost = 0;
-
-    for (int i = 0; i < nodes.size() - 1; i++) {
-
-        cost += findEdge(tour[i], tour[i + 1])->distance;
-    }
-
-    // Check if the last node connects to the first one
-    Edge* edge = findEdge(tour.back(), tour.front());
-    if (edge != nullptr) {
-        cost += edge->distance;
-    // if it doesn't then the solution is not valid
-    } else {
-        return numeric_limits<float>::max();
-    }
-
-    return cost;
-}
-
-void Graph::tspBacktracking(unsigned current, vector<int>& currPath, float& minCost, unsigned depth, vector<int>& bestPath) {
+void Graph::tspBacktracking(unsigned currNode, vector<unsigned>& currPath, float currDistance, float& minDistance, unsigned depth, vector<unsigned>& bestPath) {
 
     // Base case: all nodes visited
     if (depth == nodes.size()) {
         // Check if it forms a better tour
-        float cost = calculateCost(currPath);
-        if (cost < minCost) {
-            minCost = cost;
+        Edge* edge = findEdge(0, currNode);
+        edge != nullptr ? currDistance += edge->distance : currDistance = numeric_limits<float>::max();
+        if (currDistance < minDistance) {
+            minDistance = currDistance;
             bestPath = currPath;
         }
         return;
     }
 
     // Try all possible next nodes
-    for (auto i : nodes[current]->adj) {
-        int next = i->first->id == current ? i->second->id : i->first->id;
+    for (auto i : nodes[currNode]->adj) {
+        unsigned next = i->first->id == currNode ? i->second->id : i->first->id;
 
         // If the next node hasn't been visited
-        if (!nodes[next]->visited) {
+        if (!nodes[next]->visited && currDistance + i->distance < minDistance) {
+
             nodes[next]->visited = true;
             currPath.push_back(next);
+            currDistance += i->distance;
 
             // Recursively check next nodes
-            tspBacktracking(next, currPath, minCost, depth + 1, bestPath);
-
+            tspBacktracking(next, currPath, currDistance, minDistance, depth + 1, bestPath);
 
             // If it doesn't find a better cost tour, backtrack
             nodes[next]->visited = false;
             currPath.pop_back();
+            currDistance -= i->distance;
         }
     }
 }
@@ -135,17 +123,17 @@ float Graph::solveTspWithBacktracking() {
     nodes[0]->visited = true;
 
     // Create a tour vector to store the path
-    vector<int> currPath;
+    vector<unsigned> currPath;
     currPath.push_back(0);
 
     // Initialize the minimum cost to a large value
     float minCost = numeric_limits<float>::max();
 
     // Call the backtracking function
-    vector<int> bestPath;
-    tspBacktracking(0, currPath, minCost, 1, bestPath);
+    vector<unsigned> bestPath;
+    tspBacktracking(0, currPath, 0, minCost, 1, bestPath);
 
-    for (int i : bestPath) {
+    for (auto i : bestPath) {
         cout << i << ' ';
     }
 

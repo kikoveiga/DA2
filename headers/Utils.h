@@ -24,7 +24,7 @@ public:
     Graph* buildRealWorldGraph(int number);
     void buildRealWorldGraphNodes(int number);
     void buildRealWorldGraphEdges(int number);
-    Graph* buildToyGraph(const std::string& filename);
+    Graph* buildToyGraph(const std::string& filename, const std::string& path);
 
     const std::vector<Graph*>& getGraphs();
 };
