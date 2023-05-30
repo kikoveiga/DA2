@@ -52,7 +52,7 @@ void Utils::buildRealWorldGraphNodes(int number) {
         getline(input, longitude, ',');
         getline(input, latitude, '\r');
 
-        graphs.back()->addNode(stoi(id), stof(latitude), stof(longitude));
+        graphs.back()->addNode(stoi(id), stod(latitude), stod(longitude));
     }
 }
 
