@@ -31,12 +31,13 @@ private:
     struct Node {
         unsigned id;
         std::vector<Edge*> adj = {};
-        double latitude;
-        double longitude;
+        double latitude = 0;
+        double longitude = 0;
         std::string label;
         bool visited = false;
         double key = std::numeric_limits<double>::infinity();
         int parentNode = -1;
+        unsigned degree = 0;
     };
 
     std::vector<Node*> nodes;
@@ -44,26 +45,25 @@ private:
 public:
 
     Graph(const std::string& name, bool realOrToy);
+
     void addNode(unsigned id, double latitude = 0, double longitude = 0, const std::string& label = "");
     void addEdge(unsigned first, unsigned second, double distance);
     Edge* findEdge(unsigned first, unsigned second);
 
     const std::string& getName() const;
-    bool isRealOrToy() const;
-    bool isComplete() const;
-    bool isConnected();
-    void dfs(unsigned node);
     const std::vector<Node*>& getNodes() const;
     unsigned getNumberOfEdges() const;
 
+    bool isRealOrToy() const;
+    bool isComplete() const;
+    bool isConnected();
 
-
-    /**
-     * @brief sets all nodes visited field to false
-     */
+    void dfs(unsigned node);
     void setAllNodesUnvisited();
     void setAllKeysToInfinity();
     static double haversine(Node* first, Node* second);
+
+    std::vector<unsigned> findArticulationPoints();
 
     /**
      * @brief Backtracking function to find the optimal TSP tour
@@ -72,7 +72,7 @@ public:
      * @param minCost
      * @param depth
      */
-    void tspBacktracking(unsigned currNode, std::vector<unsigned>& currPath, double currDistance, double& minDistance, unsigned depth, std::vector<unsigned>& bestPath);
+    void tSPBacktracking(unsigned currNode, std::vector<unsigned>& currPath, double currDistance, double& minDistance, unsigned depth, std::vector<unsigned>& bestPath);
     /**
      * @brief This function should solve the TSP with backtracking
      * Backtracking can be used to solve the TSP,
@@ -80,16 +80,20 @@ public:
      * possible tours to explore.
      * @return
      */
-    double solveTspWithBacktracking(std::vector<unsigned>& path, std::vector<unsigned>& bestPath);
+    double solveTSPWithBacktracking(std::vector<unsigned>& bestPath);
 
-    double tspNNHeuristic(std::vector<unsigned>& path);
+    double tSPNNHeuristic(std::vector<unsigned>& path);
+    double tSPGreedyHeuristic(std::vector<std::pair<unsigned, unsigned>>& path);
 
-    double mSTPrim(std::vector<std::pair<unsigned, unsigned>>& mstEdges);
-    double mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mstEdges);
+    double mSTPrim(std::vector<std::pair<unsigned, unsigned>>& mST);
+    double mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST);
 
     unsigned findParentKruskal(unsigned parent[], unsigned component);
     void unionSetKruskal(unsigned set1, unsigned set2, unsigned parent[], unsigned rank[]);
 
+    double tSP1TreeLowerBound(std::vector<std::pair<unsigned, unsigned>>& tree);
+
+    double christofides(std::vector<unsigned>& path);
 
 };
 

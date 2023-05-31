@@ -12,10 +12,6 @@ Utils::Utils() {
 
 void Utils::buildGraphs() {
 
-    for (int i = 1; i <= 3; i++) {
-        buildRealWorldGraph(i);
-    }
-
     buildToyGraph("shipping.csv", "../dataset/Toy-Graphs/");
     buildToyGraph("stadiums.csv", "../dataset/Toy-Graphs/");
     buildToyGraph("tourism.csv", "../dataset/Toy-Graphs/");
@@ -24,6 +20,10 @@ void Utils::buildGraphs() {
 
     for (int n : nNodes) {
         buildToyGraph("edges_" + to_string(n) + ".csv", "../dataset/Extra_Fully_Connected_Graphs/");
+    }
+
+    for (int i = 1; i <= 3; i++) {
+        buildRealWorldGraph(i);
     }
 }
 
