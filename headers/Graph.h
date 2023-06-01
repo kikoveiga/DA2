@@ -12,6 +12,7 @@
 #include <cmath>
 #include <set>
 #include <queue>
+#include <stack>
 
 class Graph {
 
@@ -26,6 +27,7 @@ private:
         Node* first;
         Node* second;
         double distance;
+        bool visited;
     };
 
     struct Node {
@@ -36,7 +38,7 @@ private:
         std::string label;
         bool visited = false;
         double key = std::numeric_limits<double>::infinity();
-        int parentNode = -1;
+        Node* parent;
         unsigned degree = 0;
     };
 
@@ -60,7 +62,7 @@ public:
 
     void dfs(unsigned node);
     void setAllNodesUnvisited();
-    void setAllKeysToInfinity();
+    void setAllDegreesTo0();
     static double haversine(Node* first, Node* second);
 
     std::vector<unsigned> findArticulationPoints();
@@ -72,7 +74,7 @@ public:
      * @param minCost
      * @param depth
      */
-    void tSPBacktracking(unsigned currNode, std::vector<unsigned>& currPath, double currDistance, double& minDistance, unsigned depth, std::vector<unsigned>& bestPath);
+    void tSPBacktracking(unsigned currNode, std::vector<unsigned>& currPath, double currDistance, double& minDistance, std::vector<unsigned>& bestPath);
     /**
      * @brief This function should solve the TSP with backtracking
      * Backtracking can be used to solve the TSP,
@@ -93,6 +95,7 @@ public:
 
     double tSP1TreeLowerBound(std::vector<std::pair<unsigned, unsigned>>& tree);
 
+    void eulerianCircuitBacktracking(unsigned currNode, std::vector<unsigned> currCircuit, std::vector<unsigned>& eulerianCircuit);
     double christofides(std::vector<unsigned>& path);
 
 };

@@ -100,10 +100,9 @@ void testMSTPrim() {
 
     for (auto graph : graphs) {
 
-        vector<pair<unsigned, unsigned>> mST;
-
         cout << graph->getName() << " Result: ";
 
+        vector<pair<unsigned, unsigned>> mST;
         auto start = chrono::high_resolution_clock::now();
         double result = graph->mSTPrim(mST);
         auto end = chrono::high_resolution_clock::now();
@@ -157,8 +156,6 @@ void testTSP1TreeLowerBound() {
 
     for (auto graph : graphs) {
 
-        if (graph->getName() == "graph2" || graph->getName() == "graph3") continue;
-
         vector<pair<unsigned, unsigned>> tree;
 
         auto start = chrono::high_resolution_clock::now();
@@ -167,7 +164,7 @@ void testTSP1TreeLowerBound() {
         cout << graph->getName() << " Result: " << result;
 
         if (graph->getName() == "shipping" || graph->getName() == "stadiums" || graph->getName() == "tourism") {
-            cout << "Edges: {";
+            cout << " Edges: {";
             for (auto edge : tree) {
                 cout << "(" << edge.first << ", " << edge.second << "), ";
             }
@@ -229,18 +226,46 @@ void testTSPGreedyHeuristic() {
     cout << "-------------------------------------------------------------------------------------------" << "\n\n";
 }
 
+void testChristofides() {
+    Utils utils;
+    vector<Graph*> graphs = utils.getGraphs();
+
+    cout << "------------------------------Testing Christofides()------------------------------" << endl;
+
+    for (auto graph : graphs) {
+
+        if (!graph->isComplete()) continue;
+        vector<unsigned> path;
+        auto start = chrono::high_resolution_clock::now();
+        double result = graph->christofides(path);
+        auto end = chrono::high_resolution_clock::now();
+
+        cout << graph->getName() << " Result: " << result;
+
+        if (graph->getName() == "stadiums" || graph->getName() == "tourism") {
+            cout << " Path: {";
+            for (auto node : path) {
+                cout << node << ", ";
+            }
+            cout << "\b\b}";
+        }
+        cout << " Time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;
+    }
+    cout << "----------------------------------------------------------------------------------" << "\n\n";
+}
+
 int main() {
 
     //Menu menu;
 
-//    testIsComplete();
-//    testIsConnected();
+    //testIsComplete();
+    //testIsConnected();
     //testTSPBacktracking();
     //testTSPNNHeuristic();
     //testMSTPrim();
     //testMSTKruskal();
     //testTSP1TreeLowerBound();
-    testFindArticulationPoints();
+    //testFindArticulationPoints();
     //testTSPGreedyHeuristic();
+    testChristofides();
 }
-

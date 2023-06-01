@@ -8,7 +8,7 @@
 
 using namespace std;
 
-auto compareEdges = [](auto a, auto b) {return a != b && a->distance <= b->distance;};
+auto compareEdges = [](auto a, auto b) {return a != b && a->distance >= b->distance;};
 
 Graph::Graph(const string& name, bool realOrToy) {
     this->name = name;
@@ -73,7 +73,7 @@ bool Graph::isConnected() {
         return isConnected;
 }
 
-void Graph::dfs(unsigned int node) {
+void Graph::dfs(unsigned node) {
 
     nodes[node]->visited = true;
 
@@ -132,10 +132,10 @@ std::vector<unsigned> Graph::findArticulationPoints() {
     return articulationPoints;
 }
 
-void Graph::tSPBacktracking(unsigned currNode, vector<unsigned>& currPath, double currDistance, double& minDistance, unsigned depth, vector<unsigned>& bestPath) {
+void Graph::tSPBacktracking(unsigned currNode, vector<unsigned>& currPath, double currDistance, double& minDistance, vector<unsigned>& bestPath) {
 
     // Base case: all nodes visited
-    if (depth == nodes.size()) {
+    if (currPath.size() == nodes.size()) {
         // Check if it forms a better tour
         Edge* edge = findEdge(0, currNode);
         edge != nullptr ? currDistance += edge->distance : currDistance = numeric_limits<double>::max();
@@ -159,9 +159,8 @@ void Graph::tSPBacktracking(unsigned currNode, vector<unsigned>& currPath, doubl
             currDistance += i->distance;
 
             // Recursively check next nodes
-            tSPBacktracking(next, currPath, currDistance, minDistance, depth + 1, bestPath);
+            tSPBacktracking(next, currPath, currDistance, minDistance, bestPath);
 
-            // If it doesn't find a better cost tour, backtrack
             nodes[next]->visited = false;
             currPath.pop_back();
             currDistance -= i->distance;
@@ -175,9 +174,9 @@ void Graph::setAllNodesUnvisited() {
     }
 }
 
-void Graph::setAllKeysToInfinity() {
+void Graph::setAllDegreesTo0() {
     for (auto node : nodes) {
-        node->key = numeric_limits<double>::max();
+        node->degree = 0;
     }
 }
 
@@ -188,7 +187,7 @@ double Graph::solveTSPWithBacktracking(vector<unsigned>& bestPath) {
     path.push_back(0);
     double minCost = numeric_limits<double>::max();
 
-    tSPBacktracking(0, path, 0, minCost, 1, bestPath);
+    tSPBacktracking(0, path, 0, minCost, bestPath);
     setAllNodesUnvisited();
     return minCost;
 }
@@ -246,11 +245,15 @@ double Graph::tSPNNHeuristic(std::vector<unsigned>& path) {
 double Graph::tSPGreedyHeuristic(std::vector<std::pair<unsigned, unsigned>>& path) {
 
     double distance = 0;
-    set<Edge*, decltype(compareEdges)> edges(compareEdges);
+    priority_queue<Edge*, vector<Edge*>, decltype(compareEdges)> edges(compareEdges);
 
     for (auto node : nodes) {
         for (auto edge : node->adj) {
-            edges.insert(edge);
+
+            if (!edge->visited) {
+                edges.push(edge);
+                edge->visited = true;
+            }
         }
     }
 
@@ -264,28 +267,34 @@ double Graph::tSPGreedyHeuristic(std::vector<std::pair<unsigned, unsigned>>& pat
 
     while (path.size() != nodes.size()) {
 
-        Edge* edge = *edges.begin();
-        edges.erase(edges.begin());
+        Edge* edge = edges.top();
+        edge->visited = false;
+        edges.pop();
 
-        if (edge->first->parentNode < 1 && edge->second->parentNode < 1 && (path.size() == nodes.size() - 1 ||
+        if (edge->first->degree < 1 && edge->second->degree < 1 && (path.size() == nodes.size() - 1 ||
         findParentKruskal(parent, edge->first->id) != findParentKruskal(parent, edge->second->id))) {
 
             path.emplace_back(edge->first->id, edge->second->id);
-            edge->first->parentNode++;
-            edge->second->parentNode++;
+            edge->first->degree++;
+            edge->second->degree++;
             distance += edge->distance;
             unionSetKruskal(edge->first->id, edge->second->id, parent, rank);
         }
     }
 
     for (auto node : nodes) {
-        node->parentNode = -1;
+        node->degree = 0;
+    }
+
+    while (!edges.empty()) {
+        edges.top()->visited = false;
+        edges.pop();
     }
 
     return distance;
 }
 
-double Graph::mSTPrim(std::vector<std::pair<unsigned, unsigned>>& mST) {
+double Graph::mSTPrim(vector<pair<unsigned, unsigned>>& mST) {
 
     typedef pair<double, unsigned> pairWeightNode;
     priority_queue<pairWeightNode, vector<pairWeightNode>, greater<>> pq;
@@ -308,7 +317,7 @@ double Graph::mSTPrim(std::vector<std::pair<unsigned, unsigned>>& mST) {
 
             if (!nodes[next]->visited && edge->distance < nodes[next]->key) {
                 nodes[next]->key = edge->distance;
-                nodes[next]->parentNode = (int)node;
+                nodes[next]->parent = nodes[node];
                 pq.emplace(edge->distance, next);
             }
         }
@@ -317,11 +326,12 @@ double Graph::mSTPrim(std::vector<std::pair<unsigned, unsigned>>& mST) {
     double result = 0;
 
     for (auto node : nodes) {
-        if (node->parentNode != -1) {
-            mST.emplace_back(node->id < node->parentNode ? node->id : node->parentNode, node->id < node->parentNode ? node->parentNode : node->id);
+        if (node->parent != nullptr) {
+            mST.emplace_back(node->id < node->parent->id ? node->id : node->parent->id,
+                             node->id > node->parent->id ? node->id : node->parent->id);
             result += node->key;
             node->degree++;
-            nodes[node->parentNode]->degree++;
+            node->parent->degree++;
         }
     }
 
@@ -330,7 +340,7 @@ double Graph::mSTPrim(std::vector<std::pair<unsigned, unsigned>>& mST) {
     for (auto node : nodes) {
         node->visited = false;
         node->key = numeric_limits<double>::infinity();
-        node->parentNode = -1;
+        node->parent = nullptr;
     }
 
     return result;
@@ -366,12 +376,15 @@ double Graph::mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST) {
 
     double distance = 0;
 
-    set<Edge*, decltype(compareEdges)> edges(compareEdges);
+    priority_queue<Edge*, vector<Edge*>, decltype(compareEdges)> edges(compareEdges);
 
     for (auto node : nodes) {
-
         for (auto edge : node->adj) {
-            edges.insert(edge);
+
+            if (!edge->visited) {
+                edges.push(edge);
+                edge->visited = true;
+            }
         }
     }
 
@@ -383,7 +396,11 @@ double Graph::mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST) {
         rank[i] = 0;
     }
 
-    for (auto edge : edges) {
+    while (mST.size() != nodes.size() - 1) {
+
+        Edge* edge = edges.top();
+        edge->visited = false;
+        edges.pop();
 
         unsigned node1 = edge->first->id;
         unsigned node2 = edge->second->id;
@@ -395,11 +412,16 @@ double Graph::mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST) {
         }
     }
 
+    while (!edges.empty()) {
+        edges.top()->visited = false;
+        edges.pop();
+    }
+
     sort(mST.begin(), mST.end());
     return distance;
 }
 
-double Graph::tSP1TreeLowerBound(std::vector<std::pair<unsigned int, unsigned int>>& tree) {
+double Graph::tSP1TreeLowerBound(std::vector<pair<unsigned, unsigned>>& tree) {
 
     double bestLowerBound = 0;
 
@@ -437,20 +459,107 @@ double Graph::tSP1TreeLowerBound(std::vector<std::pair<unsigned int, unsigned in
     return bestLowerBound;
 }
 
-double Graph::christofides(std::vector<unsigned int>& path) {
+void Graph::eulerianCircuitBacktracking(unsigned currNode, vector<unsigned> currCircuit, vector<unsigned>& eulerianCircuit) {
 
-        vector<pair<unsigned, unsigned>> mST;
-        double distance = mSTPrim(mST);
+    if (currCircuit.size() == getNumberOfEdges()) {
+        currCircuit.push_back(currNode);
+        eulerianCircuit = currCircuit;
+        return;
+    }
 
-        vector<unsigned> oddDegreeNodes;
+    for (auto edge : nodes[currNode]->adj) {
 
-        for (auto node : nodes) {
-            if (node->degree % 2 == 1) {
-                oddDegreeNodes.push_back(node->id);
+        if (!edge->visited && eulerianCircuit.empty()) {
+            edge->visited = true;
+            unsigned nextNode = edge->first->id == currNode ? edge->second->id : edge->first->id;
+            currCircuit.push_back(currNode);
+
+            eulerianCircuitBacktracking(nextNode, currCircuit, eulerianCircuit);
+
+            edge->visited = false;
+            currCircuit.pop_back();
+        }
+    }
+}
+
+double Graph::christofides(std::vector<unsigned>& path) {
+
+    setAllDegreesTo0();
+
+    vector<pair<unsigned, unsigned>> mST;
+    mSTPrim(mST);
+
+    vector<Node*> oddDegreeNodes;
+
+    for (auto node : nodes) {
+        if (node->degree % 2 == 1) {
+            oddDegreeNodes.push_back(node);
+        }
+    }
+
+    priority_queue<Edge*, vector<Edge*>, decltype(compareEdges)> edges(compareEdges);
+
+    for (auto node : oddDegreeNodes) {
+        for (auto edge : node->adj) {
+
+            unsigned next = edge->first->id == node->id ? edge->second->id : edge->first->id;
+
+            if (!edge->visited && find(oddDegreeNodes.begin(), oddDegreeNodes.end(), nodes[next]) != oddDegreeNodes.end()) {
+                edges.push(edge);
+                edge->visited = true;
             }
         }
+    }
 
-        return distance;
+    vector<Edge*> perfectEdges;
+
+    while (perfectEdges.size() != oddDegreeNodes.size()/2) {
+
+        Edge* edge = edges.top();
+        edges.pop();
+
+        if (!edge->first->visited && !edge->second->visited) {
+            perfectEdges.push_back(edge);
+            edge->first->visited = true;
+            edge->second->visited = true;
+        }
+    }
+
+    Graph multiGraph("multi" + this->name, realOrToy);
+
+    for (auto node : nodes) {
+        multiGraph.addNode(node->id);
+    }
+
+    for (auto edge : mST) {
+        multiGraph.addEdge(edge.first, edge.second, findEdge(edge.first, edge.second)->distance);
+    }
+
+    for (auto edge : perfectEdges) {
+        multiGraph.addEdge(edge->first->id, edge->second->id, edge->distance);
+    }
+
+    vector<unsigned> currCircuit;
+    vector<unsigned> eulerianCircuit;
+    multiGraph.eulerianCircuitBacktracking(0, currCircuit, eulerianCircuit);
+
+    double distance = 0;
+    path.push_back(0);
+    unsigned last = 0;
+
+    for (int i = 1; i < eulerianCircuit.size() - 1; i++) {
+
+        if (find(path.begin(), path.end(), eulerianCircuit[i]) == path.end()) {
+            path.push_back(eulerianCircuit[i]);
+            distance += findEdge(last, eulerianCircuit[i])->distance;
+            last = eulerianCircuit[i];
+        }
+    }
+
+    distance += findEdge(last, 0)->distance;
+    path.push_back(0);
+
+    return distance;
 }
 
 
