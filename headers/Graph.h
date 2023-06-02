@@ -61,6 +61,7 @@ public:
     bool isConnected();
 
     void dfs(unsigned node);
+    void dfsTree(unsigned node, std::vector<unsigned>& tree);
     void setAllNodesUnvisited();
     void setAllDegreesTo0();
     static double haversine(Node* first, Node* second);
@@ -89,12 +90,14 @@ public:
 
     double mSTPrim(std::vector<std::pair<unsigned, unsigned>>& mST);
     double mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST);
-
     unsigned findParentKruskal(unsigned parent[], unsigned component);
     void unionSetKruskal(unsigned set1, unsigned set2, unsigned parent[], unsigned rank[]);
 
+    double tSP2Approximation(std::vector<unsigned>& path);
+
     double tSP1TreeLowerBound(std::vector<std::pair<unsigned, unsigned>>& tree);
 
+    void eulerianCircuitHierholzer(std::vector<unsigned>& eulerianCircuit);
     void eulerianCircuitBacktracking(unsigned currNode, std::vector<unsigned> currCircuit, std::vector<unsigned>& eulerianCircuit);
     double christofides(std::vector<unsigned>& path);
 

@@ -85,6 +85,20 @@ void Graph::dfs(unsigned node) {
     }
 }
 
+void Graph::dfsTree(unsigned node, vector<unsigned>& tree) {
+
+    nodes[node]->visited = true;
+    tree.push_back(node);
+
+    for (auto edge : nodes[node]->adj) {
+        unsigned next = edge->first->id == node ? edge->second->id : edge->first->id;
+        if (!nodes[next]->visited) {
+            dfsTree(next, tree);
+            tree.push_back(node);
+        }
+    }
+}
+
 unsigned Graph::getNumberOfEdges() const {
 
     unsigned numberOfEdges = 0;
@@ -242,7 +256,9 @@ double Graph::tSPNNHeuristic(std::vector<unsigned>& path) {
     return distance;
 }
 
-double Graph::tSPGreedyHeuristic(std::vector<std::pair<unsigned, unsigned>>& path) {
+double Graph::tSPGreedyHeuristic(vector<pair<unsigned, unsigned>>& path) {
+
+    path.clear();
 
     double distance = 0;
     priority_queue<Edge*, vector<Edge*>, decltype(compareEdges)> edges(compareEdges);
@@ -271,10 +287,11 @@ double Graph::tSPGreedyHeuristic(std::vector<std::pair<unsigned, unsigned>>& pat
         edge->visited = false;
         edges.pop();
 
-        if (edge->first->degree < 1 && edge->second->degree < 1 && (path.size() == nodes.size() - 1 ||
-        findParentKruskal(parent, edge->first->id) != findParentKruskal(parent, edge->second->id))) {
+        if (edge->first->degree < 2 && edge->second->degree < 2
+        && (path.size() == nodes.size() - 1 || findParentKruskal(parent, edge->first->id) != findParentKruskal(parent, edge->second->id))) {
 
             path.emplace_back(edge->first->id, edge->second->id);
+
             edge->first->degree++;
             edge->second->degree++;
             distance += edge->distance;
@@ -284,6 +301,7 @@ double Graph::tSPGreedyHeuristic(std::vector<std::pair<unsigned, unsigned>>& pat
 
     for (auto node : nodes) {
         node->degree = 0;
+        node->parent = nullptr;
     }
 
     while (!edges.empty()) {
@@ -417,7 +435,42 @@ double Graph::mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST) {
         edges.pop();
     }
 
-    sort(mST.begin(), mST.end());
+    return distance;
+}
+
+double Graph::tSP2Approximation(std::vector<unsigned int>& path) {
+
+    vector<pair<unsigned, unsigned>> mST;
+    mSTPrim(mST);
+
+    Graph mSTGraph("mSTGraph", realOrToy);
+
+    for (auto node : nodes) {
+        mSTGraph.addNode(node->id);
+    }
+
+    for (auto edge : mST) {
+        mSTGraph.addEdge(edge.first, edge.second, findEdge(edge.first, edge.second)->distance);
+    }
+
+    vector<unsigned> tree;
+    mSTGraph.dfsTree(0, tree);
+    path.push_back(0);
+    double distance = 0;
+    unsigned last = 0;
+
+    for (int i = 1; i < tree.size() - 1; i++) {
+        if (find(path.begin(), path.end(), tree[i]) == path.end()) {
+            path.push_back(tree[i]);
+            auto edge = findEdge(last, tree[i]);
+            edge == nullptr ? distance += haversine(nodes[last], nodes[tree[i]]) : distance += edge->distance;
+            last = tree[i];
+        }
+    }
+    path.push_back(0);
+    auto edge = findEdge(last, 0);
+    edge == nullptr ? distance += haversine(nodes[0], nodes[last]) : distance += edge->distance;
+
     return distance;
 }
 
@@ -455,8 +508,46 @@ double Graph::tSP1TreeLowerBound(std::vector<pair<unsigned, unsigned>>& tree) {
     }
 
     setAllNodesUnvisited();
-    sort(tree.begin(), tree.end());
     return bestLowerBound;
+}
+
+void Graph::eulerianCircuitHierholzer(vector<unsigned>& eulerianCircuit) {
+
+    vector<unsigned> currCircuit;
+    currCircuit.push_back(0);
+
+    while (eulerianCircuit.size() != getNumberOfEdges() + 1) {
+
+        unsigned currNode = currCircuit.back();
+        bool found = false;
+
+        for (auto edge : nodes[currNode]->adj) {
+
+            if (!edge->visited) {
+                edge->visited = true;
+                found = true;
+
+                unsigned next = edge->first->id == currNode ? edge->second->id : edge->first->id;
+                currCircuit.push_back(next);
+
+                break;
+            }
+        }
+
+        if (found) continue;
+
+        if (eulerianCircuit.empty()) eulerianCircuit = currCircuit;
+
+        else eulerianCircuit.insert(find(eulerianCircuit.begin(), eulerianCircuit.end(), *currCircuit.begin()), currCircuit.begin() + 1, currCircuit.end());
+
+        for (auto node : eulerianCircuit) {
+            if (any_of(nodes[node]->adj.begin(), nodes[node]->adj.end(), [](Edge* edge) { return !edge->visited; })) {
+                currCircuit.clear();
+                currCircuit.push_back(node);
+                break;
+            }
+        }
+    }
 }
 
 void Graph::eulerianCircuitBacktracking(unsigned currNode, vector<unsigned> currCircuit, vector<unsigned>& eulerianCircuit) {
@@ -472,7 +563,7 @@ void Graph::eulerianCircuitBacktracking(unsigned currNode, vector<unsigned> curr
         if (!edge->visited && eulerianCircuit.empty()) {
             edge->visited = true;
             unsigned nextNode = edge->first->id == currNode ? edge->second->id : edge->first->id;
-            currCircuit.push_back(currNode);
+            currCircuit.push_back(nextNode);
 
             eulerianCircuitBacktracking(nextNode, currCircuit, eulerianCircuit);
 
@@ -485,6 +576,7 @@ void Graph::eulerianCircuitBacktracking(unsigned currNode, vector<unsigned> curr
 double Graph::christofides(std::vector<unsigned>& path) {
 
     setAllDegreesTo0();
+    path.clear();
 
     vector<pair<unsigned, unsigned>> mST;
     mSTPrim(mST);
@@ -539,9 +631,15 @@ double Graph::christofides(std::vector<unsigned>& path) {
         multiGraph.addEdge(edge->first->id, edge->second->id, edge->distance);
     }
 
-    vector<unsigned> currCircuit;
+    //vector<unsigned> currCircuit;
+    //currCircuit.push_back(0);
     vector<unsigned> eulerianCircuit;
-    multiGraph.eulerianCircuitBacktracking(0, currCircuit, eulerianCircuit);
+
+    bool isEulerian = all_of(multiGraph.nodes.begin(), multiGraph.nodes.end(), [](Node* node) { return node->degree % 2 == 0; });
+    if (!isEulerian) return 0;
+
+    //multiGraph.eulerianCircuitBacktracking(0, currCircuit, eulerianCircuit);
+    multiGraph.eulerianCircuitHierholzer(eulerianCircuit);
 
     double distance = 0;
     path.push_back(0);
