@@ -4,8 +4,6 @@
 
 #include "../headers/Graph.h"
 
-#include <iostream>
-
 using namespace std;
 
 auto compareEdges = [](auto a, auto b) {return a != b && a->distance >= b->distance;};
@@ -61,16 +59,36 @@ bool Graph::isRealOrToy() const {
 
 bool Graph::isComplete() const {
 
-    return all_of(nodes.begin(), nodes.end(), [this](Node* node) { return node->adj.size() == nodes.size() - 1; });
+    return all_of(nodes.begin(), nodes.end(), [this](Node* node) {return node->adj.size() == nodes.size() - 1;});
 }
 
 bool Graph::isConnected() {
 
         dfs(0);
 
-        bool isConnected = all_of(nodes.begin(), nodes.end(), [](Node* node) { return node->visited; });
+        bool isConnected = all_of(nodes.begin(), nodes.end(), [](Node* node) {return node->visited;});
         setAllNodesUnvisited();
         return isConnected;
+}
+
+double Graph::haversine(Graph::Node* first, Graph::Node* second) {
+
+    double lat1 = first->latitude;
+    double lon1 = first->longitude;
+    double lat2 = second->latitude;
+    double lon2 = second->longitude;
+    int R = 6371;
+
+    double dLat = (lat2 - lat1)*M_PI/180.0;
+    double dLon = (lon2 - lon1)*M_PI/180.0;
+
+    lat1 = lat1*M_PI/180.0;
+    lat2 = lat2*M_PI/180.0;
+
+    double a = pow(sin(dLat / 2), 2) + pow(sin(dLon / 2), 2)*cos(lat1)*cos(lat2);
+    double c = 2*asin(sqrt(a));
+
+    return R*c;
 }
 
 void Graph::dfs(unsigned node) {
@@ -99,10 +117,33 @@ void Graph::dfsTree(unsigned node, vector<unsigned>& tree) {
     }
 }
 
+void Graph::dfsArticulationPoints(unsigned int node, int num[], int low[],  unsigned& counter, std::set<unsigned int>& articulationPoints) {
+
+    nodes[node]->visited = true;
+    num[node] = low[node] = (int)counter++;
+
+    for (auto edge : nodes[node]->adj) {
+        unsigned next = edge->first->id == node ? edge->second->id : edge->first->id;
+
+        if (num[next] == -1) {
+
+            nodes[next]->parent = nodes[node];
+            dfsArticulationPoints(next, num, low, counter, articulationPoints);
+            low[node] = min(low[node], low[next]);
+
+            if (node != 0 && low[next] >= num[node]) {
+                articulationPoints.insert(node);
+            }
+
+        }
+        else if (nodes[next]->visited) low[node] = min(low[node], num[next]);
+    }
+    nodes[node]->visited = false;
+}
+
 unsigned Graph::getNumberOfEdges() const {
 
     unsigned numberOfEdges = 0;
-
     for (auto node : nodes) {
         numberOfEdges += node->adj.size();
     }
@@ -110,39 +151,45 @@ unsigned Graph::getNumberOfEdges() const {
     return numberOfEdges / 2;
 }
 
-double Graph::haversine(Graph::Node* first, Graph::Node* second) {
+set<unsigned> Graph::findArticulationPoints() {
 
-        double lat1 = first->latitude;
-        double lon1 = first->longitude;
-        double lat2 = second->latitude;
-        double lon2 = second->longitude;
-        int R = 6371;
-
-        double dLat = (lat2 - lat1)*M_PI/180.0;
-        double dLon = (lon2 - lon1)*M_PI/180.0;
-
-        lat1 = lat1*M_PI/180.0;
-        lat2 = lat2*M_PI/180.0;
-
-        double a = pow(sin(dLat / 2), 2) + pow(sin(dLon / 2), 2)*cos(lat1)*cos(lat2);
-        double c = 2*asin(sqrt(a));
-
-        return R*c;
-}
-
-std::vector<unsigned> Graph::findArticulationPoints() {
-
-    vector<unsigned> articulationPoints;
+    set<unsigned> articulationPoints;
     if (isComplete()) return articulationPoints;
 
+    unsigned counter = 0;
+    stack<unsigned> stack;
+    auto* num = new int[nodes.size()];
+    auto* low = new int[nodes.size()];
+
+    for (unsigned i = 0; i < nodes.size(); i++) {
+        num[i] = -1;
+        low[i] = -1;
+    }
+
     for (auto node : nodes) {
-        node->visited = true;
-        if (!isConnected()) {
-            articulationPoints.push_back(node->id);
+        if (!node->visited) {
+            dfsArticulationPoints(node->id, num, low, counter, articulationPoints);
         }
     }
 
-    setAllNodesUnvisited();
+    // Check if node 0 is an articulation point
+    int children = 0;
+    for (auto edge : nodes[0]->adj) {
+        unsigned next = edge->second->id;
+        if (nodes[next]->parent == nodes[0]) {
+            children++;
+        }
+
+        if (children > 1) {
+            articulationPoints.insert(0);
+            break;
+        }
+    }
+
+    for (auto node : nodes) {
+        node->parent = nullptr;
+    }
+
     return articulationPoints;
 }
 
@@ -301,7 +348,6 @@ double Graph::tSPGreedyHeuristic(vector<pair<unsigned, unsigned>>& path) {
 
     for (auto node : nodes) {
         node->degree = 0;
-        node->parent = nullptr;
     }
 
     while (!edges.empty()) {
@@ -314,6 +360,7 @@ double Graph::tSPGreedyHeuristic(vector<pair<unsigned, unsigned>>& path) {
 
 double Graph::mSTPrim(vector<pair<unsigned, unsigned>>& mST) {
 
+    mST.clear();
     typedef pair<double, unsigned> pairWeightNode;
     priority_queue<pairWeightNode, vector<pairWeightNode>, greater<>> pq;
 
@@ -353,8 +400,6 @@ double Graph::mSTPrim(vector<pair<unsigned, unsigned>>& mST) {
         }
     }
 
-    sort(mST.begin(), mST.end());
-
     for (auto node : nodes) {
         node->visited = false;
         node->key = numeric_limits<double>::infinity();
@@ -367,7 +412,6 @@ double Graph::mSTPrim(vector<pair<unsigned, unsigned>>& mST) {
 unsigned Graph::findParentKruskal(unsigned parent[], unsigned component) {
 
     if (parent[component] == component) return component;
-
     return parent[component] = findParentKruskal(parent, parent[component]);
 }
 
@@ -392,7 +436,7 @@ void Graph::unionSetKruskal(unsigned node1, unsigned node2, unsigned parent[], u
 
 double Graph::mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST) {
 
-    double distance = 0;
+    mST.clear();
 
     priority_queue<Edge*, vector<Edge*>, decltype(compareEdges)> edges(compareEdges);
 
@@ -413,6 +457,8 @@ double Graph::mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST) {
         parent[i] = i;
         rank[i] = 0;
     }
+
+    double distance = 0;
 
     while (mST.size() != nodes.size() - 1) {
 
@@ -438,8 +484,9 @@ double Graph::mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST) {
     return distance;
 }
 
-double Graph::tSP2Approximation(std::vector<unsigned int>& path) {
+double Graph::tSP2Approximation(std::vector<unsigned>& path) {
 
+    path.clear();
     vector<pair<unsigned, unsigned>> mST;
     mSTPrim(mST);
 
@@ -459,7 +506,7 @@ double Graph::tSP2Approximation(std::vector<unsigned int>& path) {
     double distance = 0;
     unsigned last = 0;
 
-    for (int i = 1; i < tree.size() - 1; i++) {
+    for (unsigned i = 1; i < tree.size() - 1; i++) {
         if (find(path.begin(), path.end(), tree[i]) == path.end()) {
             path.push_back(tree[i]);
             auto edge = findEdge(last, tree[i]);
@@ -477,8 +524,11 @@ double Graph::tSP2Approximation(std::vector<unsigned int>& path) {
 double Graph::tSP1TreeLowerBound(std::vector<pair<unsigned, unsigned>>& tree) {
 
     double bestLowerBound = 0;
+    set<unsigned> articulationPoints = findArticulationPoints();
 
     for (auto node : nodes) {
+
+        if (articulationPoints.find(node->id) != articulationPoints.end()) continue;
 
         node->visited = true;
         vector<pair<unsigned, unsigned>> mST;
@@ -645,7 +695,7 @@ double Graph::christofides(std::vector<unsigned>& path) {
     path.push_back(0);
     unsigned last = 0;
 
-    for (int i = 1; i < eulerianCircuit.size() - 1; i++) {
+    for (unsigned i = 1; i < eulerianCircuit.size() - 1; i++) {
 
         if (find(path.begin(), path.end(), eulerianCircuit[i]) == path.end()) {
             path.push_back(eulerianCircuit[i]);

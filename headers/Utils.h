@@ -21,10 +21,11 @@ public:
     Utils();
 
     void buildGraphs();
-    Graph* buildRealWorldGraph(int number);
-    void buildRealWorldGraphNodes(int number);
-    void buildRealWorldGraphEdges(int number);
     Graph* buildToyGraph(const std::string& filename, const std::string& path);
+    Graph* buildRealWorldGraph(unsigned number);
+    void buildRealWorldGraphNodes(unsigned number);
+    void buildRealWorldGraphEdges(unsigned number);
+
 
     const std::vector<Graph*>& getGraphs();
 };

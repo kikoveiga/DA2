@@ -16,61 +16,14 @@ void Utils::buildGraphs() {
     buildToyGraph("stadiums.csv", "../dataset/Toy-Graphs/");
     buildToyGraph("tourism.csv", "../dataset/Toy-Graphs/");
 
-    vector<int> nNodes = {25, 50, 75, 100, 200, 300, 400, 500, 600, 700, 800, 900};
+    vector<unsigned> nNodes = {25, 50, 75, 100, 200, 300, 400, 500, 600, 700, 800, 900};
 
-    for (int n : nNodes) {
+    for (unsigned n : nNodes) {
         buildToyGraph("edges_" + to_string(n) + ".csv", "../dataset/Extra_Fully_Connected_Graphs/");
     }
 
-    for (int i = 1; i <= 3; i++) {
+    for (unsigned i = 1; i <= 3; i++) {
         buildRealWorldGraph(i);
-    }
-}
-
-Graph* Utils::buildRealWorldGraph(int number) {
-
-    auto graph = new Graph("graph" + to_string(number), true);
-    graphs.push_back(graph);
-
-    buildRealWorldGraphNodes(number);
-    buildRealWorldGraphEdges(number);
-
-    return graph;
-}
-
-void Utils::buildRealWorldGraphNodes(int number) {
-
-    ifstream file("../dataset/Real-World-Graphs/graph" + to_string(number) + "/nodes.csv");
-    string line;
-    getline(file, line);
-
-    while (getline(file, line)) {
-
-        string id, latitude, longitude;
-        stringstream input(line);
-        getline(input, id, ',');
-        getline(input, longitude, ',');
-        getline(input, latitude, '\r');
-
-        graphs.back()->addNode(stoi(id), stod(latitude), stod(longitude));
-    }
-}
-
-void Utils::buildRealWorldGraphEdges(int number) {
-
-    ifstream file("../dataset/Real-World-Graphs/graph" + to_string(number) + "/edges.csv");
-    string line;
-    getline(file, line);
-
-    while (getline(file, line)) {
-
-        string first, second, distance;
-        stringstream input(line);
-        getline(input, first, ',');
-        getline(input, second, ',');
-        getline(input, distance, '\r');
-
-        graphs.back()->addEdge(stoi(first), stoi(second), stof(distance));
     }
 }
 
@@ -103,10 +56,57 @@ Graph* Utils::buildToyGraph(const string& filename, const string& path) {
             graph->addNode(stoi(second));
         }
 
-        graph->addEdge(stoi(first), stoi(second), stof(distance));
+        graph->addEdge(stoi(first), stoi(second), stod(distance));
     }
 
     return graph;
+}
+
+Graph* Utils::buildRealWorldGraph(unsigned number) {
+
+    auto graph = new Graph("graph" + to_string(number), true);
+    graphs.push_back(graph);
+
+    buildRealWorldGraphNodes(number);
+    buildRealWorldGraphEdges(number);
+
+    return graph;
+}
+
+void Utils::buildRealWorldGraphNodes(unsigned number) {
+
+    ifstream file("../dataset/Real-World-Graphs/graph" + to_string(number) + "/nodes.csv");
+    string line;
+    getline(file, line);
+
+    while (getline(file, line)) {
+
+        string id, latitude, longitude;
+        stringstream input(line);
+        getline(input, id, ',');
+        getline(input, longitude, ',');
+        getline(input, latitude, '\r');
+
+        graphs.back()->addNode(stoi(id), stod(latitude), stod(longitude));
+    }
+}
+
+void Utils::buildRealWorldGraphEdges(unsigned number) {
+
+    ifstream file("../dataset/Real-World-Graphs/graph" + to_string(number) + "/edges.csv");
+    string line;
+    getline(file, line);
+
+    while (getline(file, line)) {
+
+        string first, second, distance;
+        stringstream input(line);
+        getline(input, first, ',');
+        getline(input, second, ',');
+        getline(input, distance, '\r');
+
+        graphs.back()->addEdge(stoi(first), stoi(second), stod(distance));
+    }
 }
 
 const vector<Graph*>& Utils::getGraphs() {

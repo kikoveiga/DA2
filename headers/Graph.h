@@ -39,7 +39,8 @@ private:
         bool visited = false;
         double key = std::numeric_limits<double>::infinity();
         Node* parent;
-        unsigned degree = 0;
+        int degree = 0;
+        int lowTarjan = -1;
     };
 
     std::vector<Node*> nodes;
@@ -56,17 +57,18 @@ public:
     const std::vector<Node*>& getNodes() const;
     unsigned getNumberOfEdges() const;
 
+    void setAllNodesUnvisited();
+    void setAllDegreesTo0();
+    static double haversine(Node* first, Node* second);
+
     bool isRealOrToy() const;
     bool isComplete() const;
     bool isConnected();
 
     void dfs(unsigned node);
     void dfsTree(unsigned node, std::vector<unsigned>& tree);
-    void setAllNodesUnvisited();
-    void setAllDegreesTo0();
-    static double haversine(Node* first, Node* second);
-
-    std::vector<unsigned> findArticulationPoints();
+    void dfsArticulationPoints(unsigned node, int num[], int low[], unsigned& counter, std::set<unsigned>& articulationPoints);
+    std::set<unsigned> findArticulationPoints();
 
     /**
      * @brief Backtracking function to find the optimal TSP tour
