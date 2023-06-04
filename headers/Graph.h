@@ -261,9 +261,9 @@ public:
 
     /**
      * @brief Backtracking algorithm to find the Eulerian circuit of an eulerian graph (less efficient so it was not used)
-     * @param currNode
-     * @param currCircuit
-     * @param eulerianCircuit
+     * @param currNode current node to be visited
+     * @param currCircuit current circuit traversed so far
+     * @param eulerianCircuit vector with the nodes of the eulerian circuit
      */
     void eulerianCircuitBacktracking(unsigned currNode, std::vector<unsigned> currCircuit, std::vector<unsigned>& eulerianCircuit);
 
@@ -277,10 +277,11 @@ public:
 
     /**
      * @brief Function that implements the 2-Opt algorithm to improve a path by switching pairs of edges
+     * @brief Complexity: O(|N|^2)
      * @param path vector with the nodes of the path
      * @return the best improved distance of the path
      */
-    double tSP2OptImprovement(std::vector<unsigned>& path);
+     double tSP2OptImprovement(std::vector<unsigned>& path);
 };
 
 #endif //DA2_GRAPH_H

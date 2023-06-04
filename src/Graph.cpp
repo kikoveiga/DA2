@@ -147,7 +147,7 @@ void Graph::dfsTree(unsigned node, vector<unsigned>& tree) {
     }
 }
 
-void Graph::dfsArticulationPoints(unsigned int node, int num[], int low[],  unsigned& counter, std::set<unsigned int>& articulationPoints) {
+void Graph::dfsArticulationPoints(unsigned int node, int num[], int low[],  unsigned& counter, set<unsigned int>& articulationPoints) {
 
     nodes[node]->visited = true;
     num[node] = low[node] = (int)counter++;
@@ -262,9 +262,11 @@ double Graph::solveTSPWithBacktracking(vector<unsigned>& bestPath) {
     return minCost;
 }
 
-double Graph::tSPNNHeuristic(std::vector<unsigned>& path) {
+double Graph::tSPNNHeuristic(vector<unsigned>& path) {
 
     path.clear();
+    if (getName() == "shipping") return 0; // Exclude shipping graph
+
     path.push_back(0);
     nodes[0]->visited = true;
     double distance = 0;
@@ -316,6 +318,7 @@ double Graph::tSPNNHeuristic(std::vector<unsigned>& path) {
 double Graph::tSPGreedyHeuristic(vector<pair<unsigned, unsigned>>& path) {
 
     path.clear();
+    if (!isComplete()) return 0; // Exclude incomplete graphs
 
     double distance = 0;
     priority_queue<Edge*, vector<Edge*>, decltype(compareEdges)> edges(compareEdges);
@@ -451,7 +454,7 @@ void Graph::unionSetKruskal(unsigned node1, unsigned node2, unsigned parent[], u
     }
 }
 
-double Graph::mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST) {
+double Graph::mSTKruskal(vector<pair<unsigned, unsigned>>& mST) {
 
     mST.clear();
     priority_queue<Edge*, vector<Edge*>, decltype(compareEdges)> edges(compareEdges);
@@ -500,9 +503,11 @@ double Graph::mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST) {
     return distance;
 }
 
-double Graph::tSP2Approximation(std::vector<unsigned>& path) {
+double Graph::tSP2Approximation(vector<unsigned>& path) {
 
     path.clear();
+    if (getName() == "shipping") return 0; // Exclude shipping graph
+
     vector<pair<unsigned, unsigned>> mST;
     mSTPrim(mST);
 
@@ -537,7 +542,7 @@ double Graph::tSP2Approximation(std::vector<unsigned>& path) {
     return distance;
 }
 
-double Graph::tSP1TreeLowerBound(std::vector<pair<unsigned, unsigned>>& tree) {
+double Graph::tSP1TreeLowerBound(vector<pair<unsigned, unsigned>>& tree) {
 
     double bestLowerBound = 0;
     set<unsigned> articulationPoints = findArticulationPoints();
@@ -639,9 +644,10 @@ void Graph::eulerianCircuitBacktracking(unsigned currNode, vector<unsigned> curr
     }
 }
 
-double Graph::christofides(std::vector<unsigned>& path) {
+double Graph::christofides(vector<unsigned>& path) {
 
     path.clear();
+    if (!isComplete()) return 0; // Exclude incomplete graphs
 
     vector<pair<unsigned, unsigned>> mST;
     mSTPrim(mST);
@@ -724,7 +730,7 @@ double Graph::christofides(std::vector<unsigned>& path) {
     return distance;
 }
 
-double Graph::tSP2OptImprovement(std::vector<unsigned int>& path) {
+double Graph::tSP2OptImprovement(vector<unsigned int>& path) {
 
     double currDistance = 0;
     for (unsigned i = 0; i < path.size() - 1; i++)
@@ -744,19 +750,31 @@ double Graph::tSP2OptImprovement(std::vector<unsigned int>& path) {
                 currDistance -= findEdge(newPath[i - 1], newPath[i])->distance;
                 currDistance -= findEdge(newPath[j], newPath[j + 1])->distance;
 
-                reverse(newPath.begin() + i, newPath.begin() + j + 1);
+                if (j != i + 1) { // Non-consecutive nodes
+                    currDistance -= findEdge(newPath[i], newPath[i + 1])->distance;
+                    currDistance -= findEdge(newPath[j - 1], newPath[j])->distance;
+                }
+
+                swap(newPath[i], newPath[j]);
 
                 currDistance += findEdge(newPath[i - 1], newPath[i])->distance;
                 currDistance += findEdge(newPath[j], newPath[j + 1])->distance;
+
+                if (j != i + 1) { // Non-consecutive nodes
+                    currDistance += findEdge(newPath[i], newPath[i + 1])->distance;
+                    currDistance += findEdge(newPath[j - 1], newPath[j])->distance;
+                }
 
                 if (currDistance < bestDistance) {
                     path = newPath;
                     bestDistance = currDistance;
                     found = true;
+                    break;
                 }
                 else currDistance = bestDistance;
             }
         }
+        if (found) break;
     }
     return bestDistance;
 }

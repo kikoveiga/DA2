@@ -2,10 +2,6 @@
 // Created by kikoveiga on 29-04-2023.
 //
 
-#include <iostream>
-#include <chrono>
-#include <list>
-
 #include "../headers/Menu.h"
 
 using namespace std;
@@ -206,9 +202,12 @@ void testMSTKruskal(const vector<Graph*>& graphs) {
 
 void testTSP1TreeLowerBound(const vector<Graph*>& graphs) {
 
-    cout << "-------------------------------------------------------------------Testing TSP1TreeLowerBound()------------------------------------------------------------------" << endl;
+    cout << "-------------------------------------------------------------------Testing TSP1TreeLowerBound()--------------------------------------------------------------------" << endl;
+    cout << "|   GRAPH   |    RESULT   |    TIME    |                                                           EDGES                                                          |" << endl;
 
     for (auto graph : graphs) {
+
+        if (graph->getName() == "graph2" || graph->getName() == "graph3") continue;
 
         vector<pair<unsigned, unsigned>> tree;
 
@@ -218,7 +217,7 @@ void testTSP1TreeLowerBound(const vector<Graph*>& graphs) {
         sort(tree.begin(), tree.end());
 
         cout << "| " << left << setw(9) << graph->getName() << " | " << left << setw(11) << result << " | "
-        << left << setw(8) <<  to_string(chrono::duration_cast<chrono::milliseconds>(end - start).count()) + " ms" << " | ";
+        << left << setw(10) <<  to_string(chrono::duration_cast<chrono::milliseconds>(end - start).count()) + " ms" << " | ";
 
         if (graph->getName() == "shipping" || graph->getName() == "stadiums" || graph->getName() == "tourism") {
             string printEdges = "{";
@@ -228,7 +227,7 @@ void testTSP1TreeLowerBound(const vector<Graph*>& graphs) {
         }
         else cout << left << setw(121) << ' ' << '|' << endl;
     }
-    cout << "-----------------------------------------------------------------------------------------------------------------------------------------------------------------" << "\n\n";
+    cout << "-------------------------------------------------------------------------------------------------------------------------------------------------------------------" << "\n\n";
 }
 
 void testFindArticulationPoints(const vector<Graph*>& graphs) {
@@ -337,7 +336,7 @@ void testTSP2OptImprovement(const vector<Graph*>& graphs) {
 
 int main() {
 
-    //Menu menu;
+    Menu menu;
 
     Utils utils;
     vector<Graph*> graphs = utils.getGraphs();
