@@ -10,9 +10,7 @@
 
 using namespace std;
 
-void testIsComplete() {
-    Utils utils;
-    vector<Graph*> graphs = utils.getGraphs();
+void testIsComplete(const vector<Graph*>& graphs) {
 
     cout << "-Testing IsComplete()-" << endl;
     cout << "|   GRAPH   | RESULT |" << endl;
@@ -23,9 +21,7 @@ void testIsComplete() {
     cout << "----------------------" << "\n\n";
 }
 
-void testIsConnected() {
-    Utils utils;
-    vector<Graph*> graphs = utils.getGraphs();
+void testIsConnected(const vector<Graph*>& graphs) {
 
     cout << "-----Testing IsConnected()-----" << endl;
     cout << "|   GRAPH   | RESULT |  TIME  |" << endl;
@@ -41,16 +37,14 @@ void testIsConnected() {
     cout << "-------------------------------" << "\n\n";
 }
 
-void testTSPBacktracking() {
-    Utils utils;
-    vector<Graph*> graphs = utils.getGraphs();
+void testTSPBacktracking(const vector<Graph*>& graphs) {
 
     cout << "-----------------------------Testing TSPBacktracking()----------------------------" << endl;
     cout << "|   GRAPH  | RESULT |  TIME  |                        PATH                       |" << endl;
 
     for (auto graph : graphs) {
 
-        if (graph->isRealOrToy() || graph->getName()[0] == 'e') continue;
+        if (graph->getName() != "shipping" && graph->getName() != "stadiums" && graph->getName() != "tourism") continue;
 
         vector<unsigned> bestPath;
 
@@ -72,9 +66,7 @@ void testTSPBacktracking() {
     cout << "----------------------------------------------------------------------------------" << "\n\n";
 }
 
-void testTSPNNHeuristic() {
-    Utils utils;
-    vector<Graph*> graphs = utils.getGraphs();
+void testTSPNNHeuristic(const vector<Graph*>& graphs) {
 
     cout << "--------------------------Testing TSPNNHeuristic()--------------------------" << endl;
     cout << "|   GRAPH   |    RESULT   |  TIME  |                  PATH                 |" << endl;
@@ -105,121 +97,7 @@ void testTSPNNHeuristic() {
     cout << "----------------------------------------------------------------------------" << "\n\n";
 }
 
-void testMSTPrim() {
-    Utils utils;
-    vector<Graph*> graphs = utils.getGraphs();
-
-    cout << "-------------------------------------------------------------------Testing MSTPrim()------------------------------------------------------------------" << endl;
-    cout << "|   GRAPH   |    RESULT   |  TIME  |                                                       EDGES                                                     |" << endl;
-
-    for (auto graph : graphs) {
-
-        vector<pair<unsigned, unsigned>> mST;
-        auto start = chrono::high_resolution_clock::now();
-        double result = graph->mSTPrim(mST);
-        auto end = chrono::high_resolution_clock::now();
-
-        cout << "| " << left << setw(9) << graph->getName() << " | " << left << setw(11) << result << " | "
-        << left << setw(6) <<  to_string(chrono::duration_cast<chrono::milliseconds>(end - start).count()) + " ms" << " | ";
-
-
-        if (graph->getName() == "shipping" || graph->getName() == "stadiums" || graph->getName() == "tourism") {
-            string printEdges = "{";
-            for (auto edge : mST) {
-                printEdges += "(" + to_string(edge.first) + ", " + to_string(edge.second) + "), ";
-            }
-            printEdges += "\b\b}";
-            cout << left << setw(116) << printEdges << '|' << endl;
-        }
-        else cout << left << setw(112) << ' ' << '|' << endl;
-
-    }
-    cout << "------------------------------------------------------------------------------------------------------------------------------------------------------" << "\n\n";
-}
-
-void testMSTKruskal() {
-
-    Utils utils;
-    vector<Graph*> graphs = utils.getGraphs();
-
-    cout << "------------------------------------------------------------------Testing MSTKruskal()------------------------------------------------------------------" << endl;
-    cout << "|   GRAPH   |    RESULT   |   TIME   |                                                      EDGES                                                      |" << endl;
-
-    for (auto graph : graphs) {
-
-        vector<pair<unsigned, unsigned>> mST;
-
-        auto start = chrono::high_resolution_clock::now();
-        double result = graph->mSTKruskal(mST);
-        auto end = chrono::high_resolution_clock::now();
-
-        cout << "| " << left << setw(9) << graph->getName() << " | " << left << setw(11) << result << " | "
-        << left << setw(8) <<  to_string(chrono::duration_cast<chrono::milliseconds>(end - start).count()) + " ms" << " | ";
-
-        if (graph->getName() == "shipping" || graph->getName() == "stadiums" || graph->getName() == "tourism") {
-            string printEdges = "{";
-            for (auto edge : mST) {
-                printEdges += "(" + to_string(edge.first) + ", " + to_string(edge.second) + "), ";
-            }
-            printEdges += "\b\b}";
-            cout << left << setw(116) << printEdges << '|' << endl;
-        }
-        else cout << left << setw(112) << ' ' << '|' << endl;
-    }
-    cout << "--------------------------------------------------------------------------------------------------------------------------------------------------------" << "\n\n";
-}
-
-void testTSP1TreeLowerBound() {
-    Utils utils;
-    vector<Graph*> graphs = utils.getGraphs();
-
-    cout << "--------------------------------Testing TSP1TreeLowerBound()--------------------------------" << endl;
-
-    for (auto graph : graphs) {
-
-        vector<pair<unsigned, unsigned>> tree;
-
-        auto start = chrono::high_resolution_clock::now();
-        double result = graph->tSP1TreeLowerBound(tree);
-        auto end = chrono::high_resolution_clock::now();
-        cout << graph->getName() << " Result: " << result;
-
-        if (graph->getName() == "shipping" || graph->getName() == "stadiums" || graph->getName() == "tourism") {
-            cout << " Edges: {";
-            for (auto edge : tree) {
-                cout << "(" << edge.first << ", " << edge.second << "), ";
-            }
-            cout << "\b\b} ||";
-        }
-        cout << " Time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;
-    }
-    cout << "-------------------------------------------------------------------------------------------" << "\n\n";
-}
-
-void testFindArticulationPoints() {
-
-    Utils utils;
-    vector<Graph*> graphs = utils.getGraphs();
-
-    cout << "--------------------------------Testing findArticulationPoints()--------------------------------" << endl;
-
-    for (auto graph : graphs) {
-
-        auto start = chrono::high_resolution_clock::now();
-        set<unsigned> articulationPoints = graph->findArticulationPoints();
-        auto end = chrono::high_resolution_clock::now();
-        cout << graph->getName() << " Articulation Points: {";
-        for (auto node : articulationPoints) {
-            cout << node << ", ";
-        }
-        cout << "\b\b} Time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << " ms" << endl;
-    }
-    cout << "------------------------------------------------------------------------------------------------" << "\n\n";
-}
-
-void testTSPGreedyHeuristic() {
-    Utils utils;
-    vector<Graph*> graphs = utils.getGraphs();
+void testTSPGreedyHeuristic(const vector<Graph*>& graphs) {
 
     cout << "------------------------Testing TSPGreedyHeuristic()------------------------" << endl;
     cout << "|   GRAPH   |    RESULT   |  TIME  |                  PATH                 |" << endl;
@@ -234,7 +112,7 @@ void testTSPGreedyHeuristic() {
         auto end = chrono::high_resolution_clock::now();
 
         cout << "| " << left << setw(9) << graph->getName() << " | " << left << setw(11) << result << " | "
-        << left << setw(6) << to_string(chrono::duration_cast<chrono::milliseconds>(end - start).count()) + " ms" << " | ";
+             << left << setw(6) << to_string(chrono::duration_cast<chrono::milliseconds>(end - start).count()) + " ms" << " | ";
 
         if (graph->getName() == "stadiums" || graph->getName() == "tourism") {
             string printPath = "{";
@@ -265,10 +143,112 @@ void testTSPGreedyHeuristic() {
     cout << "----------------------------------------------------------------------------" << "\n\n";
 }
 
-void testChristofides() {
+void testMSTPrim(const vector<Graph*>& graphs) {
 
-    Utils utils;
-    vector<Graph*> graphs = utils.getGraphs();
+    cout << "-------------------------------------------------------------------Testing MSTPrim()------------------------------------------------------------------" << endl;
+    cout << "|   GRAPH   |    RESULT   |  TIME  |                                                       EDGES                                                     |" << endl;
+
+    for (auto graph : graphs) {
+
+        vector<pair<unsigned, unsigned>> mST;
+        auto start = chrono::high_resolution_clock::now();
+        double result = graph->mSTPrim(mST);
+        auto end = chrono::high_resolution_clock::now();
+        sort(mST.begin(), mST.end());
+
+        cout << "| " << left << setw(9) << graph->getName() << " | " << left << setw(11) << result << " | "
+        << left << setw(6) <<  to_string(chrono::duration_cast<chrono::milliseconds>(end - start).count()) + " ms" << " | ";
+
+
+        if (graph->getName() == "shipping" || graph->getName() == "stadiums" || graph->getName() == "tourism") {
+            string printEdges = "{";
+            for (auto edge : mST) {
+                printEdges += "(" + to_string(edge.first) + ", " + to_string(edge.second) + "), ";
+            }
+            printEdges += "\b\b}";
+            cout << left << setw(116) << printEdges << '|' << endl;
+        }
+        else cout << left << setw(112) << ' ' << '|' << endl;
+
+    }
+    cout << "------------------------------------------------------------------------------------------------------------------------------------------------------" << "\n\n";
+}
+
+void testMSTKruskal(const vector<Graph*>& graphs) {
+
+    cout << "------------------------------------------------------------------Testing MSTKruskal()------------------------------------------------------------------" << endl;
+    cout << "|   GRAPH   |    RESULT   |   TIME   |                                                      EDGES                                                      |" << endl;
+
+    for (auto graph : graphs) {
+
+        vector<pair<unsigned, unsigned>> mST;
+
+        auto start = chrono::high_resolution_clock::now();
+        double result = graph->mSTKruskal(mST);
+        auto end = chrono::high_resolution_clock::now();
+        sort(mST.begin(), mST.end());
+
+        cout << "| " << left << setw(9) << graph->getName() << " | " << left << setw(11) << result << " | "
+        << left << setw(8) <<  to_string(chrono::duration_cast<chrono::milliseconds>(end - start).count()) + " ms" << " | ";
+
+        if (graph->getName() == "shipping" || graph->getName() == "stadiums" || graph->getName() == "tourism") {
+            string printEdges = "{";
+            for (auto edge : mST) {
+                printEdges += "(" + to_string(edge.first) + ", " + to_string(edge.second) + "), ";
+            }
+            printEdges += "\b\b}";
+            cout << left << setw(116) << printEdges << '|' << endl;
+        }
+        else cout << left << setw(112) << ' ' << '|' << endl;
+    }
+    cout << "--------------------------------------------------------------------------------------------------------------------------------------------------------" << "\n\n";
+}
+
+void testTSP1TreeLowerBound(const vector<Graph*>& graphs) {
+
+    cout << "-------------------------------------------------------------------Testing TSP1TreeLowerBound()------------------------------------------------------------------" << endl;
+
+    for (auto graph : graphs) {
+
+        vector<pair<unsigned, unsigned>> tree;
+
+        auto start = chrono::high_resolution_clock::now();
+        double result = graph->tSP1TreeLowerBound(tree);
+        auto end = chrono::high_resolution_clock::now();
+        sort(tree.begin(), tree.end());
+
+        cout << "| " << left << setw(9) << graph->getName() << " | " << left << setw(11) << result << " | "
+        << left << setw(8) <<  to_string(chrono::duration_cast<chrono::milliseconds>(end - start).count()) + " ms" << " | ";
+
+        if (graph->getName() == "shipping" || graph->getName() == "stadiums" || graph->getName() == "tourism") {
+            string printEdges = "{";
+            for (auto edge : tree) printEdges += "(" + to_string(edge.first) + ", " + to_string(edge.second) + "), ";
+            printEdges += "\b\b}";
+            cout << left << setw(125) << printEdges << '|' << endl;
+        }
+        else cout << left << setw(121) << ' ' << '|' << endl;
+    }
+    cout << "-----------------------------------------------------------------------------------------------------------------------------------------------------------------" << "\n\n";
+}
+
+void testFindArticulationPoints(const vector<Graph*>& graphs) {
+
+    cout << "-Testing findArticulationPoints()-" << endl;
+    cout << "|   GRAPH   |  RESULT  |   TIME  |" << endl;
+
+    for (auto graph : graphs) {
+
+        auto start = chrono::high_resolution_clock::now();
+        set<unsigned> articulationPoints = graph->findArticulationPoints();
+        auto end = chrono::high_resolution_clock::now();
+
+        cout << "| " << left << setw(9) << graph->getName() << " | " << left << setw(8) << articulationPoints.size() << " | "
+        << left << setw(7) <<  to_string(chrono::duration_cast<chrono::milliseconds>(end - start).count()) + " ms" << " | " << endl;
+    }
+    cout << "----------------------------------" << "\n\n";
+}
+
+void testChristofides(const vector<Graph*>& graphs) {
 
     cout << "---------------------------Testing Christofides()---------------------------" << endl;
     cout << "|   GRAPH   |    RESULT   |  TIME  |                  PATH                 |" << endl;
@@ -301,10 +281,7 @@ void testChristofides() {
     cout << "----------------------------------------------------------------------------" << "\n\n";
 }
 
-void testTSP2Approximation() {
-
-        Utils utils;
-        vector<Graph*> graphs = utils.getGraphs();
+void testTSP2Approximation(const vector<Graph*>& graphs) {
 
         cout << "------------------------Testing TSP2Approximation()--------------------------" << endl;
         cout << "|   GRAPH   |    RESULT   |   TIME  |                  PATH                 |" << endl;
@@ -337,19 +314,44 @@ void testTSP2Approximation() {
         cout << "-----------------------------------------------------------------------------" << "\n\n";
 }
 
+void testTSP2OptImprovement(const vector<Graph*>& graphs) {
+
+    cout << "------------------------Testing TSP2OptImprovement()-----------------------" << endl;
+    cout << "|   GRAPH   | CHRISTOFIDES | CHRISTOFIDES2OPT |      NN     |    NN2OPT   |" << endl;
+
+    for (auto graph : graphs) {
+        if (!graph->isComplete()) continue;
+
+        vector<unsigned> path;
+        double result1 = graph->christofides(path);
+        double improved1 = graph->tSP2OptImprovement(path);
+
+        double result2 = graph->tSPNNHeuristic(path);
+        double improved2 = graph->tSP2OptImprovement(path);
+
+        cout << "| " << left << setw(9) << graph->getName() << " | " << left << setw(12) << result1 << " | "
+        << left << setw(16) << improved1 << " | " << left << setw(11) << result2 << " | " << left << setw(11) << improved2 << " |" << endl;
+    }
+    cout << "---------------------------------------------------------------------------" << "\n\n";
+}
+
 int main() {
 
     //Menu menu;
 
-    //testIsComplete();
-    //testIsConnected();
-    //testTSPBacktracking();
-    //testTSPNNHeuristic();
-    //testMSTPrim();
-    //testMSTKruskal();
-    testTSP1TreeLowerBound();
-    testFindArticulationPoints();
-    //testTSPGreedyHeuristic();
-    //testChristofides();
-    //testTSP2Approximation();
+    Utils utils;
+    vector<Graph*> graphs = utils.getGraphs();
+
+    testIsComplete(graphs);
+    testIsConnected(graphs);
+    testTSPBacktracking(graphs);
+    testTSPNNHeuristic(graphs);
+    testTSPGreedyHeuristic(graphs);
+    testMSTPrim(graphs);
+    testMSTKruskal(graphs);
+    testTSP1TreeLowerBound(graphs);
+    testFindArticulationPoints(graphs);
+    testChristofides(graphs);
+    testTSP2Approximation(graphs);
+    testTSP2OptImprovement(graphs);
 }

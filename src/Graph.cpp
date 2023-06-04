@@ -45,30 +45,42 @@ Graph::Edge* Graph::findEdge(unsigned first, unsigned second) {
         return nullptr;
 }
 
-const vector<Graph::Node*>& Graph::getNodes() const {
-    return nodes;
-}
-
 const string& Graph::getName() const {
     return name;
 }
 
-bool Graph::isRealOrToy() const {
-    return realOrToy;
+const vector<Graph::Node*>& Graph::getNodes() const {
+    return nodes;
 }
 
-bool Graph::isComplete() const {
+unsigned Graph::getNumberOfEdges() const {
 
-    return all_of(nodes.begin(), nodes.end(), [this](Node* node) {return node->adj.size() == nodes.size() - 1;});
+    unsigned numberOfEdges = 0;
+    for (auto node : nodes) {
+        numberOfEdges += node->adj.size();
+    }
+
+    return numberOfEdges / 2;
 }
 
-bool Graph::isConnected() {
+void Graph::setAllNodesUnvisited() {
+    for (auto node : nodes) {
+        node->visited = false;
+    }
+}
 
-        dfs(0);
+void Graph::setAllEdgesUnvisited() {
+    for (auto node : nodes) {
+        for (auto edge : node->adj) {
+            edge->visited = false;
+        }
+    }
+}
 
-        bool isConnected = all_of(nodes.begin(), nodes.end(), [](Node* node) {return node->visited;});
-        setAllNodesUnvisited();
-        return isConnected;
+void Graph::setAllDegreesTo0() {
+    for (auto node : nodes) {
+        node->degree = 0;
+    }
 }
 
 double Graph::haversine(Graph::Node* first, Graph::Node* second) {
@@ -89,6 +101,24 @@ double Graph::haversine(Graph::Node* first, Graph::Node* second) {
     double c = 2*asin(sqrt(a));
 
     return R*c;
+}
+
+bool Graph::isRealOrToy() const {
+    return realOrToy;
+}
+
+bool Graph::isComplete() const {
+
+    return all_of(nodes.begin(), nodes.end(), [this](Node* node) {return node->adj.size() == nodes.size() - 1;});
+}
+
+bool Graph::isConnected() {
+
+    dfs(0);
+
+    bool isConnected = all_of(nodes.begin(), nodes.end(), [](Node* node) {return node->visited;});
+    setAllNodesUnvisited();
+    return isConnected;
 }
 
 void Graph::dfs(unsigned node) {
@@ -139,16 +169,6 @@ void Graph::dfsArticulationPoints(unsigned int node, int num[], int low[],  unsi
         else if (nodes[next]->visited) low[node] = min(low[node], num[next]);
     }
     nodes[node]->visited = false;
-}
-
-unsigned Graph::getNumberOfEdges() const {
-
-    unsigned numberOfEdges = 0;
-    for (auto node : nodes) {
-        numberOfEdges += node->adj.size();
-    }
-
-    return numberOfEdges / 2;
 }
 
 set<unsigned> Graph::findArticulationPoints() {
@@ -229,20 +249,9 @@ void Graph::tSPBacktracking(unsigned currNode, vector<unsigned>& currPath, doubl
     }
 }
 
-void Graph::setAllNodesUnvisited() {
-    for (auto node : nodes) {
-        node->visited = false;
-    }
-}
-
-void Graph::setAllDegreesTo0() {
-    for (auto node : nodes) {
-        node->degree = 0;
-    }
-}
-
 double Graph::solveTSPWithBacktracking(vector<unsigned>& bestPath) {
 
+    bestPath.clear();
     nodes[0]->visited = true;
     vector<unsigned> path;
     path.push_back(0);
@@ -255,6 +264,7 @@ double Graph::solveTSPWithBacktracking(vector<unsigned>& bestPath) {
 
 double Graph::tSPNNHeuristic(std::vector<unsigned>& path) {
 
+    path.clear();
     path.push_back(0);
     nodes[0]->visited = true;
     double distance = 0;
@@ -311,6 +321,7 @@ double Graph::tSPGreedyHeuristic(vector<pair<unsigned, unsigned>>& path) {
     priority_queue<Edge*, vector<Edge*>, decltype(compareEdges)> edges(compareEdges);
 
     for (auto node : nodes) {
+        node->degree = 0; // Reset degrees
         for (auto edge : node->adj) {
 
             if (!edge->visited) {
@@ -346,12 +357,12 @@ double Graph::tSPGreedyHeuristic(vector<pair<unsigned, unsigned>>& path) {
         }
     }
 
-    for (auto node : nodes) {
+    for (auto node : nodes) { // Reset degrees
         node->degree = 0;
     }
 
     while (!edges.empty()) {
-        edges.top()->visited = false;
+        edges.top()->visited = false; // Reset remaining visited edges
         edges.pop();
     }
 
@@ -361,10 +372,17 @@ double Graph::tSPGreedyHeuristic(vector<pair<unsigned, unsigned>>& path) {
 double Graph::mSTPrim(vector<pair<unsigned, unsigned>>& mST) {
 
     mST.clear();
+    setAllDegreesTo0();
+    auto* keys = new double[nodes.size()];
+
+    for (unsigned i = 0; i < nodes.size(); i++) {
+        keys[i] = numeric_limits<double>::infinity();
+    }
+
     typedef pair<double, unsigned> pairWeightNode;
     priority_queue<pairWeightNode, vector<pairWeightNode>, greater<>> pq;
 
-    nodes[0]->key = 0;
+    keys[0] = 0;
     pq.emplace(0, 0);
 
     while (!pq.empty()) {
@@ -380,8 +398,8 @@ double Graph::mSTPrim(vector<pair<unsigned, unsigned>>& mST) {
 
             unsigned next = edge->first->id == node ? edge->second->id : edge->first->id;
 
-            if (!nodes[next]->visited && edge->distance < nodes[next]->key) {
-                nodes[next]->key = edge->distance;
+            if (!nodes[next]->visited && edge->distance < keys[next]) {
+                keys[next] = edge->distance;
                 nodes[next]->parent = nodes[node];
                 pq.emplace(edge->distance, next);
             }
@@ -394,15 +412,14 @@ double Graph::mSTPrim(vector<pair<unsigned, unsigned>>& mST) {
         if (node->parent != nullptr) {
             mST.emplace_back(node->id < node->parent->id ? node->id : node->parent->id,
                              node->id > node->parent->id ? node->id : node->parent->id);
-            result += node->key;
+            result += keys[node->id];
             node->degree++;
             node->parent->degree++;
         }
     }
 
-    for (auto node : nodes) {
+    for (auto node : nodes) {  // Reset nodes
         node->visited = false;
-        node->key = numeric_limits<double>::infinity();
         node->parent = nullptr;
     }
 
@@ -437,7 +454,6 @@ void Graph::unionSetKruskal(unsigned node1, unsigned node2, unsigned parent[], u
 double Graph::mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST) {
 
     mST.clear();
-
     priority_queue<Edge*, vector<Edge*>, decltype(compareEdges)> edges(compareEdges);
 
     for (auto node : nodes) {
@@ -476,7 +492,7 @@ double Graph::mSTKruskal(std::vector<std::pair<unsigned, unsigned>>& mST) {
         }
     }
 
-    while (!edges.empty()) {
+    while (!edges.empty()) { // Reset remaining visited edges
         edges.top()->visited = false;
         edges.pop();
     }
@@ -591,7 +607,7 @@ void Graph::eulerianCircuitHierholzer(vector<unsigned>& eulerianCircuit) {
         else eulerianCircuit.insert(find(eulerianCircuit.begin(), eulerianCircuit.end(), *currCircuit.begin()), currCircuit.begin() + 1, currCircuit.end());
 
         for (auto node : eulerianCircuit) {
-            if (any_of(nodes[node]->adj.begin(), nodes[node]->adj.end(), [](Edge* edge) { return !edge->visited; })) {
+            if (any_of(nodes[node]->adj.begin(), nodes[node]->adj.end(), [](Edge* edge) {return !edge->visited;})) {
                 currCircuit.clear();
                 currCircuit.push_back(node);
                 break;
@@ -625,7 +641,6 @@ void Graph::eulerianCircuitBacktracking(unsigned currNode, vector<unsigned> curr
 
 double Graph::christofides(std::vector<unsigned>& path) {
 
-    setAllDegreesTo0();
     path.clear();
 
     vector<pair<unsigned, unsigned>> mST;
@@ -681,14 +696,11 @@ double Graph::christofides(std::vector<unsigned>& path) {
         multiGraph.addEdge(edge->first->id, edge->second->id, edge->distance);
     }
 
-    //vector<unsigned> currCircuit;
-    //currCircuit.push_back(0);
     vector<unsigned> eulerianCircuit;
 
-    bool isEulerian = all_of(multiGraph.nodes.begin(), multiGraph.nodes.end(), [](Node* node) { return node->degree % 2 == 0; });
+    bool isEulerian = all_of(multiGraph.nodes.begin(), multiGraph.nodes.end(), [](Node* node) {return node->degree % 2 == 0;});
     if (!isEulerian) return 0;
 
-    //multiGraph.eulerianCircuitBacktracking(0, currCircuit, eulerianCircuit);
     multiGraph.eulerianCircuitHierholzer(eulerianCircuit);
 
     double distance = 0;
@@ -706,8 +718,45 @@ double Graph::christofides(std::vector<unsigned>& path) {
 
     distance += findEdge(last, 0)->distance;
     path.push_back(0);
+    setAllEdgesUnvisited();
+    setAllNodesUnvisited();
 
     return distance;
 }
 
+double Graph::tSP2OptImprovement(std::vector<unsigned int>& path) {
 
+    double currDistance = 0;
+    for (unsigned i = 0; i < path.size() - 1; i++)
+        currDistance += findEdge(path[i], path[i + 1])->distance;
+
+    double bestDistance = currDistance;
+
+    bool found = true;
+    while (found) {
+        found = false;
+
+        for (unsigned i = 1; i < path.size() - 2; i++) {
+            for (unsigned j = i + 1; j < path.size() - 1; j++) {
+
+                vector<unsigned> newPath = path;
+
+                currDistance -= findEdge(newPath[i - 1], newPath[i])->distance;
+                currDistance -= findEdge(newPath[j], newPath[j + 1])->distance;
+
+                reverse(newPath.begin() + i, newPath.begin() + j + 1);
+
+                currDistance += findEdge(newPath[i - 1], newPath[i])->distance;
+                currDistance += findEdge(newPath[j], newPath[j + 1])->distance;
+
+                if (currDistance < bestDistance) {
+                    path = newPath;
+                    bestDistance = currDistance;
+                    found = true;
+                }
+                else currDistance = bestDistance;
+            }
+        }
+    }
+    return bestDistance;
+}
