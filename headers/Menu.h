@@ -50,6 +50,7 @@ public:
      * @brief Function that runs and prints the main menu
      */
     void mainMenu();
+
     /**
      * @brief Function that runs and prints the graphs menu
      */

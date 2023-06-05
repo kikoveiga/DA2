@@ -134,7 +134,7 @@ void Menu::graphMenu(Graph* graph) {
          << "| " << left << setw(20) <<  graph->getName() + " MENU" << setw(26) << ' ' << "|\n"
          << "|-----------------------------------------------|\n"
          << "| 1. N OF NODES, EDGES AND ARTICULATION POINTS  |\n"
-         << "| 2. IS IT COMPLETE AND/OR CONNECTED?           |\n"
+         << "| 2. IS IT COMPLETE, CONNECTED AND REAL/TOY?    |\n"
          << "| 3. PRINT GRAPH                                |\n"
          << "| 4. GO BACK                                    |\n"
          << "-------------------------------------------------\n";
@@ -151,7 +151,7 @@ void Menu::graphMenu(Graph* graph) {
 
     else if (command == "2") { // Is it complete and/or connected?
 
-        cout << "   -This graph is " << (graph->isComplete() ? "" : "not ") << "complete and is " << (graph->isConnected() ? "" : "not ") << "connected.\n";
+        cout << "   -This " << (graph->isRealOrToy() ? "real " : "toy ") << "graph is " << (graph->isComplete() ? "" : "not ") << "complete and is " << (graph->isConnected() ? "" : "not ") << "connected.\n";
         cout << endl;
         press0ToContinue();
     }
