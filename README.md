@@ -5,7 +5,7 @@
 <h6>Jose Francisco Reis Pedreiras Neves Veiga		- up202108753@up.pt</h6>
 <h6>Antonio Marujo Rama	  - up202108801@up.pt</h6>
 
-This project was done for the Design of Algorithms curricular unit @ **FEUP**.
+This project was done for the Design of Algorithms curricular unit @ **FEUP - Faculdade de Engenharia da Universidade do Porto**.
 It implements different algorithms and heuristics for solving the Traveling Salesman Problem (TSP) using C++ and provides a menu-based interface to interact with the algorithms and compare their performance on various graphs.
 
 <h2>Algorithms Implemented</h2>
