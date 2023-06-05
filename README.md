@@ -30,4 +30,4 @@ It implements different algorithms and heuristics for solving the Traveling Sale
   
   <h2>Results</h2>
   
-  ![image](https://github.com/kikoveiga/DA2/assets/93687043/9717d99c-65b6-4503-a6b8-7d353dcbb790)
+  ![image.png](dataset/image.png)
