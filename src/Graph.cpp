@@ -177,7 +177,6 @@ set<unsigned> Graph::findArticulationPoints() {
     if (isComplete()) return articulationPoints;
 
     unsigned counter = 0;
-    stack<unsigned> stack;
     auto* num = new int[nodes.size()];
     auto* low = new int[nodes.size()];
 

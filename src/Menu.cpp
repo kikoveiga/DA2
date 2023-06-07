@@ -399,22 +399,22 @@ void Menu::algorithmsMenu() {
     else if (command == "5") { // TSP 1Tree Lower Bound
 
         cout << "   -CHOOSE A GRAPH: \n";
-        for (int i = 1; i < utils.getGraphs().size(); i++) {
+        for (int i = 1; i <= utils.getGraphs().size(); i++) {
             cout << "       [" << i << "]" << utils.getGraphs()[i - 1]->getName() << '\n';
         }
-        cout << "       [" << utils.getGraphs().size() << "] ALL EXCLUDING GRAPH2 AND GRAPH3\n";
+        cout << "       [" << utils.getGraphs().size() + 1 << "] ALL EXCLUDING GRAPH2 AND GRAPH3\n";
 
-        enterOption(utils.getGraphs().size());
+        enterOption(utils.getGraphs().size() + 1);
 
         cout << endl;
         cout << "-----------------------------------------------------------------------TSP 1TREE LOWER BOUND-----------------------------------------------------------------------\n";
         cout << "|   GRAPH   |    RESULT   |    TIME    |                                                           EDGES                                                          |" << endl;
 
         unsigned i;
-        if (stoi(command) == utils.getGraphs().size()) i = 0;
+        if (stoi(command) == utils.getGraphs().size() + 1) i = 0;
         else i = stoi(command) - 1;
 
-        for (i; i < utils.getGraphs().size() - 2; (command == to_string(utils.getGraphs().size()) ? i++ : i = utils.getGraphs().size() - 2)) {
+        for (i; i < utils.getGraphs().size() - 2; (command == to_string(utils.getGraphs().size() + 1) ? i++ : i = utils.getGraphs().size() - 2)) {
 
             vector<pair<unsigned, unsigned>> tree;
             auto start = chrono::high_resolution_clock::now();
